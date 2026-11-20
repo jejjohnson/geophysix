@@ -9,6 +9,7 @@ importable, so ``import geophysix`` never imports JAX itself.
 from __future__ import annotations
 
 import dataclasses
+import importlib
 import numbers
 from typing import Any, cast
 
@@ -27,7 +28,8 @@ def register_record[T: type](cls: T, *, meta_fields: tuple[str, ...] = ()) -> T:
         ``cls`` itself, registered or not.
     """
     try:
-        import jax
+        # by name, so a type checker without JAX installed resolves nothing
+        jax = importlib.import_module("jax")
     # the NumPy-only install registers nothing
     except ImportError:
         return cls
