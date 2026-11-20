@@ -1,6 +1,6 @@
 [project]
 name = "geophysix"
-version = "0.0.1"
+version = "0.0.2"
 description = "Physical constants, Earth geometry and atmospheric state, on NumPy with JAX optional."
 authors = [
     {name="J. Emmanuel Johnson", email="jemanjohnson34@gmail.com"},
