@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/jejjohnson/geophysix/compare/v0.0.2...v0.0.3) (2026-11-20)
+
+
+### Bug Fixes
+
+* **constants:** importing geophysix never imports JAX; records register when JAX loads ([#39](https://github.com/jejjohnson/geophysix/issues/39)) ([af11e49](https://github.com/jejjohnson/geophysix/commit/af11e4931e8d43f2fe883571fe96b423dbdb428c))
+
 ## [0.0.2](https://github.com/jejjohnson/geophysix/compare/v0.0.1...v0.0.2) (2026-11-20)
 
 
