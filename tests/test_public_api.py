@@ -19,8 +19,11 @@ import geophysix
 SUBMODULES = [
     "_typing",
     "constants",
+    "columns",
     "earth",
     "exceptions",
+    "rotation",
+    "thermo",
 ]
 
 

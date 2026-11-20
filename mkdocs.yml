@@ -74,6 +74,9 @@ nav:
   - Capability index: capabilities.md
   - Constants: constants.md
   - Earth: earth.md
+  - Rotation: rotation.md
+  - Thermodynamics: thermo.md
+  - Columns: columns.md
   - Type aliases: typing.md
   - Exceptions: exceptions.md
 
