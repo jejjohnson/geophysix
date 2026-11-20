@@ -155,3 +155,45 @@ def test_tree_map_skips_validation() -> None:
     # tree_map rebuilds the record with arbitrary leaves; checks apply to numbers only
     doubled = jax.tree_util.tree_map(lambda v: 2.0 * v, sphere(1.0))
     assert doubled.semi_major == 2.0
+
+
+# --- JAX is never imported by geophysix itself ---
+
+
+def _run(code: str) -> str:
+    import subprocess
+    import sys
+
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True
+    )
+    return result.stdout.strip()
+
+
+def test_import_does_not_load_jax() -> None:
+    # geoarray, geoops and xrops promise a JAX-free import and import geophysix
+    code = (
+        "import sys, geophysix, geophysix.constants, geophysix.earth, "
+        "geophysix.rotation, geophysix.thermo, geophysix.columns, "
+        "geophysix.seawater; print('jax' in sys.modules)"
+    )
+    assert _run(code) == "False"
+
+
+@needs_jax
+def test_records_register_when_jax_is_imported_later() -> None:
+    code = (
+        "import geophysix.earth as e, geophysix.constants as c, jax; "
+        "print(len(jax.tree_util.tree_leaves(e.WGS84)), "
+        "len(jax.tree_util.tree_leaves(c.CH4)))"
+    )
+    assert _run(code) == "3 1"
+
+
+@needs_jax
+def test_records_register_when_jax_is_imported_first() -> None:
+    code = (
+        "import jax, geophysix.earth as e; "
+        "print(len(jax.tree_util.tree_leaves(e.SPHERE)))"
+    )
+    assert _run(code) == "3"
