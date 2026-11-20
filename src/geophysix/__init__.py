@@ -15,7 +15,8 @@ nothing from the rest of the GeoStack.
 | `geophysix.seawater` | the sea-water equation of state |
 | `geophysix.columns` | column units |
 
-`constants` and `earth` exist; the others are created by later feature issues.
+`constants`, `earth`, `rotation`, `thermo` and `columns` exist; `seawater` comes
+with wave 3.
 """
 
 from __future__ import annotations
