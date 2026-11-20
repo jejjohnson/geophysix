@@ -1,17 +1,16 @@
 # Copilot Instructions
 
-Read [`AGENTS.md`](../AGENTS.md) at the repository root first: it is the single source of truth for every coding agent working here (the module map, "reuse before you write", the contracts, the tests that enforce them, commands, the pre-commit checklist, the two-tool docs, git and PR rules). Passages marked `<!-- template-example: … -->` there describe the bundled example package and are rewritten when the template is adopted.
+Read [`AGENTS.md`](../AGENTS.md) at the repository root first: it is the single source of truth for every coding agent working here (the module map, "reuse before you write", the contracts, the tests that enforce them, commands, the pre-commit checklist, the two-tool docs, git and PR rules).
 
 The essentials, in case you only read this file:
 
-<!-- template-example: the module map and contracts of the example package. -->
-
-- One package, `src/mypackage/`, dependency-free, with modules that import only downward: `_typing` → `exceptions` → `utils` → `stats` / `smoothing` → `transforms` → `cli`. Search [`docs/api/capabilities.md`](../docs/api/capabilities.md) before writing a helper.
+- One package, `src/geophysix/`: the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water. It is GeoNumerics tier 0 and imports nothing from the GeoStack (never gridax, diagnostix, pipekit, geotoolz or a model). Planned public modules: `constants`, `earth`, `rotation`, `thermo`, `seawater`, `columns`; private code in `_src/<module>/`. Search [`docs/api/capabilities.md`](../docs/api/capabilities.md) before writing a helper.
+- Ownership test: a closed-form fact at a point belongs here; anything on a grid or a field belongs above.
 - Keep the contracts in `AGENTS.md`:
-  - **public functions** validate once, at the boundary, with the `utils` validators, raise `ValidationError` naming the argument, and return a new list without mutating their input;
-  - **transforms** satisfy the `Transform` protocol structurally; fitted ones raise `NotFittedError` before `fit`, and `fit` returns `self`;
-  - **CLI** subcommands write to the injected streams and return an exit status; library errors become exit 1, usage errors exit 2;
-  - every exception derives from `MypackageError` and its stdlib base.
+  - **array rules**: NumPy in gives NumPy out; JAX is never imported at module level; a function computes in the namespace of its first array argument via `geophysix._src.backend.array_namespace`; constants enter in the input's dtype (`xp.asarray(c, dtype=x.dtype)`), never promoting float32;
+  - **records** are frozen dataclasses of floats passed as keyword arguments with defaults;
+  - **units** are SI, and degrees versus radians is an explicit argument;
+  - every exception derives from `GeophysixError`, which is a `ValueError`.
 
 The rules for every project:
 
@@ -22,5 +21,5 @@ The rules for every project:
 - Partial test runs need `--no-cov` (the 90 % coverage gate fails a subset).
 - Never push or merge to `main` unless told to; never replace an existing PR description, only append to it.
 - No AI attribution: no `Co-Authored-By:` trailer for an AI and no "Generated with …" line, unless asked. PR descriptions open with why, then a small before/after table; one `Closes #N` line per issue.
-- Step-by-step recipes (adopt the template, add a function, transform, CLI command, guide page or notebook; pre-PR check; review) are plain Markdown in `.claude/skills/<name>/SKILL.md`, and the two review checklists in `.claude/agents/`; follow them as written.
+- Step-by-step recipes (add a physical function, guide page or notebook; pre-PR check; review) are plain Markdown in `.claude/skills/<name>/SKILL.md`, and the two review checklists in `.claude/agents/`; follow them as written.
 - Path-scoped standards live in `.github/instructions/`; code review follows [`CODE_REVIEW.md`](../CODE_REVIEW.md).

@@ -3,8 +3,8 @@ name: Tests
 on:
   push:
     branches: [main]
+  # every pull request, whatever its base, so stacked PRs are tested too
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --extra jax --all-groups
       - name: Run tests with coverage
         run: uv run pytest -v
       - name: Upload coverage report
@@ -36,3 +36,20 @@ jobs:
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
+
+  test-without-jax:
+    name: geophysix without JAX
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+      - name: Install dependencies (no jax extra)
+        run: uv sync --group dev --group test
+      - name: Assert that JAX is not installed
+        run: >-
+          uv run python -c
+          "import importlib.util,sys; sys.exit(importlib.util.find_spec('jax') is not None)"
+      - name: Run tests without JAX
+        run: uv run pytest -o addopts= tests

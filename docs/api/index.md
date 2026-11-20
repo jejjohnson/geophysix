@@ -1,32 +1,23 @@
 # API Reference
 
-Everything listed in `mypackage.__all__` is importable from the top level:
-
-```python
-import mypackage as mp
-
-mp.summarize(...)  # same object as mypackage.stats.summarize
-```
-
-The submodules below are an implementation detail you are welcome to reach
-into, but never have to. The [capability index](capabilities.md) lists every
-public name on one page, with a one-line summary each.
+The public API is the set of public modules below, plus the exceptions that `geophysix.__all__` exports. Private code lives in `geophysix._src`. The [capability index](capabilities.md) lists every public name on one page, with a one-line summary each.
 
 ## Modules
 
-| Module | Contents |
-|---|---|
-| [Statistics](stats.md) | `summarize`, `Summary`, `quantile`, `zscores`, `RunningStats` |
-| [Smoothing](smoothing.md) | `moving_average`, `exponential_moving_average`, `median_filter`, `Padding` |
-| [Transforms](transforms.md) | `Standardize`, `MinMaxScale`, `Clip`, `MovingAverage`, `Pipeline`, `chain` |
-| [Utilities](utils.md) | `as_floats`, `require_non_empty`, `require_positive`, `Window`, `timer` |
-| [Protocols](typing.md) | `Series`, `Transform`, `Fittable` |
-| [Exceptions](exceptions.md) | `MypackageError`, `ValidationError`, `EmptySeriesError`, `NotFittedError` |
-| [CLI](cli.md) | `main`, `build_parser` |
+| Module | Contents | Status |
+|---|---|---|
+| [`geophysix.constants`](constants.md) | CODATA 2018 constants, standard gravity, dry air and trace gases | available |
+| [`geophysix.earth`](earth.md) | The ellipsoid and the sphere: records, coordinates, radii, cell areas, distances | available |
+| `geophysix.rotation` | The Earth's rotation and the Coriolis parameter | planned |
+| `geophysix.thermo` | Atmospheric thermodynamics | planned |
+| `geophysix.seawater` | The sea-water equation of state | planned |
+| `geophysix.columns` | Column units | planned |
+| [Type aliases](typing.md) | `ArrayLike` | available |
+| [Exceptions](exceptions.md) | `GeophysixError`, `EarthError`, `UnitError`, `RangeError` | available |
 
 ## Package overview
 
-::: mypackage
+::: geophysix
     options:
       members: false
       show_root_heading: false
