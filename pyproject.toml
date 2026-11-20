@@ -1,7 +1,7 @@
 [project]
-name = "mypackage"
-version = "0.1.7"
-description = "My short description for my project."
+name = "geophysix"
+version = "0.0.1"
+description = "Physical constants, Earth geometry and atmospheric state, on NumPy with JAX optional."
 authors = [
     {name="J. Emmanuel Johnson", email="jemanjohnson34@gmail.com"},
 ]
@@ -19,13 +19,13 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Development Status :: 2 - Pre-Alpha",
 ]
-dependencies = []
+dependencies = ["numpy>=2.0"]
+
+[project.optional-dependencies]
+jax = ["jax>=0.4.30"]
 
 [project.urls]
-Repository = "https://github.com/jejjohnson/mypackage"
-
-[project.scripts]
-mypackage = "mypackage.cli:main"
+Repository = "https://github.com/jejjohnson/geophysix"
 
 [dependency-groups]
 dev = [
@@ -35,6 +35,12 @@ dev = [
     "poethepoet>=0.49.0",
     "cyclopts>=5.3.3",
     "loguru>=0.7.3",
+]
+test = [
+    # Reference results only: oracles and property tests, never runtime imports.
+    "pyproj>=3.6",
+    "gsw>=3.6",
+    "hypothesis>=6.100",
 ]
 lint = [
     "ruff>=0.15.22",
@@ -70,7 +76,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mypackage"]
+packages = ["src/geophysix"]
 
 [tool.ruff]
 target-version = "py312"
@@ -100,10 +106,10 @@ docstring-code-line-length = 72
 python-version = "3.12"
 
 [tool.pytest.ini_options]
-# `src/mypackage` is a testpath so that --doctest-modules collects the
+# `src/geophysix` is a testpath so that --doctest-modules collects the
 # ``Examples:`` blocks in every Google-style docstring. They are executable
 # documentation: if an example in the docs goes stale, CI fails.
-testpaths = ["tests", "src/mypackage"]
+testpaths = ["tests", "src/geophysix"]
 # Test tiers (see "Test tiers" in AGENTS.md). CI runs every tier.
 strict_markers = true
 markers = [
@@ -112,13 +118,13 @@ markers = [
 ]
 addopts = """\
     --doctest-modules \
-    --cov=src/mypackage \
+    --cov=src/geophysix \
     --cov-report=term-missing \
     --cov-report=xml:coverage.xml\
 """
 
 [tool.coverage.run]
-source = ["src/mypackage"]
+source = ["src/geophysix"]
 omit = ["tests/*"]
 
 [tool.coverage.report]
@@ -135,7 +141,7 @@ exclude_also = [
 #   uv run poe            # list every task with its help text
 #   uv run poe install    # first run: `uv run` syncs the dev group, so poe exists
 # Extra arguments are passed through to the underlying command, e.g.
-#   uv run poe test tests/test_stats.py -k summarize
+#   uv run poe test tests/test_exceptions.py -k base
 # ---------------------------------------------------------------------------
 [tool.poe]
 # Tasks call `uv run --group …` themselves, exactly as CI does, so poe must not
@@ -146,7 +152,7 @@ envfile = { optional = ".env" }
 
 [tool.poe.env]
 # Overridable from .env or the shell.
-PKGROOT.default = "src/mypackage"
+PKGROOT.default = "src/geophysix"
 TYPECHECK_EXTRA.default = "scripts"
 
 # --- Meta -------------------------------------------------------------------
