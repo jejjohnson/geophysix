@@ -23,6 +23,7 @@ SUBMODULES = [
     "earth",
     "exceptions",
     "rotation",
+    "seawater",
     "thermo",
 ]
 

@@ -11,7 +11,7 @@ geophysix is the GeoStack's library of closed-form physical facts about the Eart
 
 People build on a package like this, so **the package is a library of primitives**: new code composes what is here, and anything genuinely new lands where the next person will find and reuse it.
 
-The public API is the set of public modules below; private code lives in `src/geophysix/_src/<module>/`. `src/geophysix/__init__.py` exports only `__version__` and the exceptions. `constants`, `earth`, `rotation`, `thermo` and `columns` exist; `seawater` and the rest of `thermo` come with wave 3 (#11).
+The public API is the set of public modules below; private code lives in `src/geophysix/_src/<module>/`. `src/geophysix/__init__.py` exports only `__version__` and the exceptions. Every module exists; TEOS-10 waits on #34 and saturation vapour pressure on a consumer that needs it.
 
 | Module | Owns |
 |---|---|
@@ -20,8 +20,8 @@ The public API is the set of public modules below; private code lives in `src/ge
 | `constants` | `Constants` (CODATA 2018, standard gravity, the standard atmosphere, dry air) as `STANDARD`, and `Gas` records (`CH4`, `CO2`, `H2O`, `N2O`, `CO`) |
 | `earth` | The Earth's figure, `Ellipsoid` (`WGS84`, `GRS80`) and `sphere` (`SPHERE`, the IUGG mean radius), and the geometry on it |
 | `rotation` | The Coriolis parameter f, its gradient β and the β-plane |
-| `thermo` | The thermodynamics of air (number density; the rest with wave 3) |
-| `seawater` (planned) | The sea-water equation of state |
+| `thermo` | The ideal gas, virtual and potential temperature, the Exner function, hypsometric thickness |
+| `seawater` | The linear equation of state (`LinearEOS`, `LINEAR_EOS`), buoyancy, reduced gravity |
 | `columns` | Column units (`convert`), the dry-air column, mixing ratio ↔ column |
 
 ### Boundaries
@@ -59,8 +59,8 @@ Before writing a helper, a constant, a conversion or a formula, find out whether
 | A hand-written `g = 9.81` | `geophysix.constants.STANDARD.standard_gravity` |
 | A haversine or great-circle distance | `geophysix.earth` (#19) |
 | A Coriolis parameter, `2 Ω sin φ`, or an Earth rotation rate | `geophysix.rotation.coriolis`, `beta`, `beta_plane`; Ω is `earth.rotation_rate` |
-| An ideal-gas law, a potential temperature, a saturation vapour pressure | `geophysix.thermo` (planned) |
-| A sea-water density, a freezing point | `geophysix.seawater` (planned) |
+| An ideal-gas law, a virtual or potential temperature, a hypsometric thickness | `geophysix.thermo` |
+| A linear sea-water density, buoyancy or reduced gravity | `geophysix.seawater` |
 | A column-unit conversion, `p / (k_B T)`, a dry-air column, a molecules-per-area to mixing-ratio conversion | `geophysix.columns.convert`, `geophysix.thermo.number_density`, `geophysix.columns.dry_air_column`, `mixing_ratio_from_column` |
 | `xp = np if isinstance(x, np.ndarray) else jnp` | `geophysix._src.backend.array_namespace` |
 | A frozen record that must cross `jit` | `geophysix._src._records.register_record` (and `is_concrete` for checks that skip tracers) |

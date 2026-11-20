@@ -15,8 +15,7 @@ nothing from the rest of the GeoStack.
 | `geophysix.seawater` | the sea-water equation of state |
 | `geophysix.columns` | column units |
 
-`constants`, `earth`, `rotation`, `thermo` and `columns` exist; `seawater` comes
-with wave 3.
+Every module exists; TEOS-10 waits on #34.
 """
 
 from __future__ import annotations
