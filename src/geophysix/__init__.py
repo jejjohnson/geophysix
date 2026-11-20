@@ -8,15 +8,14 @@ nothing from the rest of the GeoStack.
 
 | Module | What it gives you |
 |---|---|
-| `geophysix.constants` | CODATA and IAU constants |
+| `geophysix.constants` | CODATA constants, standard gravity, dry air and trace gases |
 | `geophysix.earth` | the ellipsoid and the sphere |
 | `geophysix.rotation` | the Earth's rotation, Coriolis |
 | `geophysix.thermo` | atmospheric thermodynamics |
 | `geophysix.seawater` | the sea-water equation of state |
 | `geophysix.columns` | column units |
 
-These modules are created by later feature issues; this release holds only the
-exception hierarchy.
+`constants` and `earth` exist; the others are created by later feature issues.
 """
 
 from __future__ import annotations

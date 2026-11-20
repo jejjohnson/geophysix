@@ -11,14 +11,14 @@ geophysix is the GeoStack's library of closed-form physical facts about the Eart
 
 People build on a package like this, so **the package is a library of primitives**: new code composes what is here, and anything genuinely new lands where the next person will find and reuse it.
 
-The public API is the set of public modules below; private code lives in `src/geophysix/_src/<module>/`. `src/geophysix/__init__.py` exports only `__version__` and the exceptions. The modules are planned and built by the feature issues (#15, #17–#19 and waves 2–3); only `exceptions.py` and `_typing.py` exist now.
+The public API is the set of public modules below; private code lives in `src/geophysix/_src/<module>/`. `src/geophysix/__init__.py` exports only `__version__` and the exceptions. `constants` and `earth` exist; the rest are built by the waves 2–3 issues (#10, #11).
 
 | Module | Owns |
 |---|---|
 | `_typing.py` | The `ArrayLike` type alias |
 | `exceptions.py` | `GeophysixError` (a `ValueError`) and its subclasses `EarthError`, `UnitError`, `RangeError` |
-| `constants` (planned) | CODATA and IAU constants |
-| `earth` (planned) | The ellipsoid and the sphere: radii, gravity, distances |
+| `constants` | `Constants` (CODATA 2018, standard gravity, the standard atmosphere, dry air) as `STANDARD`, and `Gas` records (`CH4`, `CO2`, `H2O`, `N2O`, `CO`) |
+| `earth` | The Earth's figure, `Ellipsoid` (`WGS84`, `GRS80`) and `sphere` (`SPHERE`, the IUGG mean radius), and the geometry on it |
 | `rotation` (planned) | The Earth's rotation and the Coriolis parameter |
 | `thermo` (planned) | Atmospheric thermodynamics |
 | `seawater` (planned) | The sea-water equation of state |
@@ -55,14 +55,15 @@ Before writing a helper, a constant, a conversion or a formula, find out whether
 
 | You are about to write… | Use instead |
 |---|---|
-| A hand-written Earth radius, flattening or eccentricity | `geophysix.earth` (planned, #15) and the constants in `geophysix.constants` |
-| A hand-written `g = 9.81` or a gravity formula | `geophysix.earth` (planned) |
-| A haversine or great-circle distance | `geophysix.earth` (planned) |
+| A hand-written Earth radius, flattening or eccentricity | `geophysix.earth.WGS84`, `SPHERE` or `sphere(R)`, and the constants in `geophysix.constants.STANDARD` |
+| A hand-written `g = 9.81` | `geophysix.constants.STANDARD.standard_gravity` |
+| A haversine or great-circle distance | `geophysix.earth` (#19) |
 | A Coriolis parameter, `2 Ω sin φ`, or an Earth rotation rate | `geophysix.rotation` (planned) |
 | An ideal-gas law, a potential temperature, a saturation vapour pressure | `geophysix.thermo` (planned) |
 | A sea-water density, a freezing point | `geophysix.seawater` (planned) |
 | A molecules-per-area to mixing-ratio conversion | `geophysix.columns` (planned) |
-| `xp = np if isinstance(x, np.ndarray) else jnp` | `geophysix._src.backend.array_namespace` (planned, #16) |
+| `xp = np if isinstance(x, np.ndarray) else jnp` | `geophysix._src.backend.array_namespace` |
+| A frozen record that must cross `jit` | `geophysix._src._records.register_record` (and `is_concrete` for checks that skip tracers) |
 | A new exception for a bad body, unit or latitude | `EarthError`, `UnitError`, `RangeError` |
 
 ## The contracts
@@ -85,7 +86,7 @@ Everything composes because it keeps these contracts; the tests in "What enforce
 
 ### The public API
 
-- Private code lives in `src/geophysix/_src/<module>/`; the public modules re-export it. Export a public name from its module's `__all__`; both stay sorted (ruff's `RUF022` and `test_all_is_sorted_and_unique` agree on the order). `src/geophysix/__init__.py` exports `__version__` and the exceptions only.
+- Private code lives in `src/geophysix/_src/<module>/`; the public modules re-export it. Export a public name from its module's `__all__`; both stay in plain `sorted()` order, which `tests/test_public_api.py` checks (ruff's `RUF022` is off: its isort-style order differs). `src/geophysix/__init__.py` exports `__version__` and the exceptions only.
 - A new module declares a sorted `__all__`, joins `SUBMODULES` in `tests/test_public_api.py`, and gets its own page in `docs/api/` (a `::: geophysix.<module>` block), a `nav` entry in `mkdocs.yml` and a row in `docs/api/index.md`; a name on an existing module's page is picked up by its `:::` block.
 - Run `uv run poe capabilities` after any public API change.
 - Link prose to the API by the public name (``[`earth.radius`](xref:api#geophysix.earth.radius)``), see "Documentation".

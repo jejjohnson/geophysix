@@ -6,8 +6,8 @@ The public API is the set of public modules below, plus the exceptions that `geo
 
 | Module | Contents | Status |
 |---|---|---|
-| `geophysix.constants` | CODATA and IAU constants | planned |
-| `geophysix.earth` | The ellipsoid and the sphere: radii, gravity, distances | planned |
+| [`geophysix.constants`](constants.md) | CODATA 2018 constants, standard gravity, dry air and trace gases | available |
+| [`geophysix.earth`](earth.md) | The ellipsoid and the sphere: records, coordinates, radii, cell areas, distances | available |
 | `geophysix.rotation` | The Earth's rotation and the Coriolis parameter | planned |
 | `geophysix.thermo` | Atmospheric thermodynamics | planned |
 | `geophysix.seawater` | The sea-water equation of state | planned |

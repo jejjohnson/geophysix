@@ -1,0 +1,3 @@
+# Earth
+
+::: geophysix.earth

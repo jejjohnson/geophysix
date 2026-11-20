@@ -18,6 +18,8 @@ import geophysix
 
 SUBMODULES = [
     "_typing",
+    "constants",
+    "earth",
     "exceptions",
 ]
 
