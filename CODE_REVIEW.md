@@ -138,7 +138,12 @@ import numpy as np
 
 # ❌ The sphere (e = 0) divides by zero, and the poles give nan
 def n_bad(a, e, lat_rad):
-    return a / np.sqrt(1.0 - e**2 * np.sin(lat_rad) ** 2) * np.cos(lat_rad) / np.cos(lat_rad)
+    return (
+        a
+        / np.sqrt(1.0 - e**2 * np.sin(lat_rad) ** 2)
+        * np.cos(lat_rad)
+        / np.cos(lat_rad)
+    )
 
 
 # ✅ The expression is finite at e = 0 and at the poles
