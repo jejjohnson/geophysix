@@ -1,5 +1,6 @@
 """The ideal gas and dry-air thermodynamics: density, virtual and potential
-temperature, the Exner function and hypsometric thickness."""
+temperature and its inverse, the Exner function, hypsometric thickness, and
+the hydrostatic conversion between pressure and vertical velocity."""
 
 from __future__ import annotations
 
@@ -179,6 +180,50 @@ def potential_temperature(
     return temperature * (p0 / pressure) ** kappa
 
 
+def temperature_from_potential_temperature(
+    potential_temperature: Any,
+    pressure: Any,
+    *,
+    reference_pressure: float = 100_000.0,
+    constants: Constants = STANDARD,
+) -> Any:
+    """Temperature from the potential temperature of dry air.
+
+    T = θ (p / p₀)^κ = θ Π
+
+    the inverse of `potential_temperature`, as a WRF reader needs it to turn
+    the perturbation potential temperature plus its base state into T.
+
+    Args:
+        potential_temperature: Potential temperature θ, K.
+        pressure: Pressure p, Pa.
+        reference_pressure: Reference pressure p₀, Pa; 1000 hPa by default.
+        constants: The constants record, for κ; ``STANDARD`` by default.
+
+    Returns:
+        T, K, broadcast over the inputs, in their namespace and dtype.
+
+    Examples:
+        >>> import math
+        >>> from geophysix.thermo import (
+        ...     potential_temperature,
+        ...     temperature_from_potential_temperature,
+        ... )
+        >>> float(temperature_from_potential_temperature(300.0, 100_000.0))
+        300.0
+        >>> t = temperature_from_potential_temperature(300.0, 50_000.0)
+        >>> math.isclose(float(potential_temperature(t, 50_000.0)), 300.0)
+        True
+    """
+    xp, (theta, pressure) = floating_inputs(
+        potential_temperature, pressure, params=(reference_pressure,)
+    )
+    p0 = like(reference_pressure, theta, xp)
+    kappa = like(constants.kappa, theta, xp)
+    # T = θ (p / p₀)^κ
+    return theta * (pressure / p0) ** kappa
+
+
 def hypsometric_thickness(
     pressure: Any, virtual_temperature: Any, *, constants: Constants = STANDARD
 ) -> Any:
@@ -220,3 +265,87 @@ def hypsometric_thickness(
     mean_t_v = 0.5 * (t_v[..., :-1] + t_v[..., 1:])
     # Δz_k = (R_d T̄_v / g₀) ln(p_k / p_{k+1})
     return r_d * mean_t_v / g * xp.log(pressure[..., :-1] / pressure[..., 1:])
+
+
+def vertical_velocity(
+    pressure_velocity: Any,
+    pressure: Any,
+    temperature: Any,
+    *,
+    constants: Constants = STANDARD,
+) -> Any:
+    """Vertical velocity from pressure velocity, in hydrostatic balance.
+
+    w = −ω / (ρ g₀),  ρ = p / (R_d T)
+
+    from ω ≈ (∂p/∂z) w = −ρ g₀ w, neglecting the local tendency and the
+    horizontal advection of p. Rising air has ω < 0 and w > 0. For moist air
+    pass the virtual temperature (`virtual_temperature`).
+
+    Args:
+        pressure_velocity: Pressure velocity ω = Dp/Dt, Pa s⁻¹.
+        pressure: Pressure p, Pa.
+        temperature: Temperature T (or virtual temperature T_v), K.
+        constants: The constants record, for R_d and g₀; ``STANDARD`` by default.
+
+    Returns:
+        w, m s⁻¹, broadcast over the inputs, in their namespace and dtype.
+
+    Examples:
+        >>> from geophysix.thermo import vertical_velocity
+        >>> round(float(vertical_velocity(-1.0, 50_000.0, 250.0)), 6)
+        0.146359
+    """
+    xp, (omega, pressure, temperature) = floating_inputs(
+        pressure_velocity,
+        pressure,
+        temperature,
+        params=(constants.standard_gravity,),
+    )
+    g = like(constants.standard_gravity, omega, xp)
+    # ρ = p / (R_d T)
+    density = dry_air_density(pressure, temperature, constants=constants)
+    # w = −ω / (ρ g₀)
+    return -omega / (density * g)
+
+
+def pressure_velocity(
+    vertical_velocity: Any,
+    pressure: Any,
+    temperature: Any,
+    *,
+    constants: Constants = STANDARD,
+) -> Any:
+    """Pressure velocity from vertical velocity, in hydrostatic balance.
+
+    ω = −ρ g₀ w,  ρ = p / (R_d T)
+
+    the inverse of `vertical_velocity`.
+
+    Args:
+        vertical_velocity: Vertical velocity w, m s⁻¹, positive upward.
+        pressure: Pressure p, Pa.
+        temperature: Temperature T (or virtual temperature T_v), K.
+        constants: The constants record, for R_d and g₀; ``STANDARD`` by default.
+
+    Returns:
+        ω, Pa s⁻¹, broadcast over the inputs, in their namespace and dtype.
+
+    Examples:
+        >>> import math
+        >>> from geophysix.thermo import pressure_velocity, vertical_velocity
+        >>> w = vertical_velocity(-1.0, 50_000.0, 250.0)
+        >>> math.isclose(float(pressure_velocity(w, 50_000.0, 250.0)), -1.0)
+        True
+    """
+    xp, (w, pressure, temperature) = floating_inputs(
+        vertical_velocity,
+        pressure,
+        temperature,
+        params=(constants.standard_gravity,),
+    )
+    g = like(constants.standard_gravity, w, xp)
+    # ρ = p / (R_d T)
+    density = dry_air_density(pressure, temperature, constants=constants)
+    # ω = −ρ g₀ w
+    return -density * g * w

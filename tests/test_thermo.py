@@ -5,7 +5,8 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from _backends import assert_numpy_jax_agree
+import pytest
+from _backends import assert_numpy_jax_agree, needs_jax
 
 from geophysix.constants import H2O, STANDARD, Constants
 from geophysix.thermo import (
@@ -14,6 +15,9 @@ from geophysix.thermo import (
     hypsometric_thickness,
     number_density,
     potential_temperature,
+    pressure_velocity,
+    temperature_from_potential_temperature,
+    vertical_velocity,
     virtual_temperature,
 )
 
@@ -104,3 +108,90 @@ def test_thermo_numpy_and_jax_agree() -> None:
     assert_numpy_jax_agree(potential_temperature, t, p, rtol=1e-13)
     assert_numpy_jax_agree(exner, p, rtol=1e-13)
     assert_numpy_jax_agree(hypsometric_thickness, p[::-1], t[::-1], rtol=1e-13)
+
+
+# --- temperature from potential temperature ---
+
+RNG = np.random.default_rng(3)
+P = RNG.uniform(2e4, 1.05e5, 64)
+T = RNG.uniform(200.0, 310.0, 64)
+OMEGA = RNG.normal(0.0, 2.0, 64)
+
+
+def test_temperature_from_potential_temperature() -> None:
+    assert float(temperature_from_potential_temperature(300.0, 1e5)) == 300.0
+    theta = potential_temperature(T, P)
+    # T = θ Π, and the round trip through θ
+    np.testing.assert_allclose(
+        temperature_from_potential_temperature(theta, P), T, rtol=1e-14
+    )
+    np.testing.assert_allclose(
+        temperature_from_potential_temperature(theta, P), theta * exner(P), rtol=1e-15
+    )
+
+
+def test_temperature_from_theta_matches_the_wrf_formula() -> None:
+    # xrops wrf_temperature: (T' + 300) ((P + PB) / 1e5) ** κ, bit for bit
+    theta = T + 30.0
+    expected = theta * (P / 1e5) ** STANDARD.kappa
+    np.testing.assert_array_equal(
+        temperature_from_potential_temperature(theta, P), expected
+    )
+
+
+# --- vertical velocity from pressure velocity ---
+
+
+def test_vertical_velocity_written_out() -> None:
+    # w = R_d T / (p g₀) for ω = −1 Pa s⁻¹
+    expected = STANDARD.dry_air_gas_constant * 250.0 / (5e4 * STANDARD.standard_gravity)
+    assert math.isclose(
+        float(vertical_velocity(-1.0, 5e4, 250.0)), expected, rel_tol=1e-14
+    )
+    assert float(vertical_velocity(0.0, 5e4, 250.0)) == 0.0
+
+
+def test_vertical_velocity_matches_the_era5_formula() -> None:
+    # plumax load_era5: ρ = p / (R_d T), then w = −ω / (ρ g), bit for bit
+    density = P / (STANDARD.dry_air_gas_constant * T)
+    expected = -OMEGA / (density * STANDARD.standard_gravity)
+    np.testing.assert_array_equal(vertical_velocity(OMEGA, P, T), expected)
+
+
+def test_pressure_and_vertical_velocity_round_trip() -> None:
+    w = vertical_velocity(OMEGA, P, T)
+    np.testing.assert_allclose(pressure_velocity(w, P, T), OMEGA, rtol=1e-15)
+    # linear in ω
+    np.testing.assert_allclose(
+        vertical_velocity(2.0 * OMEGA, P, T), 2.0 * w, rtol=1e-15
+    )
+
+
+@pytest.mark.parametrize(
+    ("fn", "args"),
+    [
+        (temperature_from_potential_temperature, (T[:8] + 30.0, P[:8])),
+        (vertical_velocity, (OMEGA[:8], P[:8], T[:8])),
+        (pressure_velocity, (OMEGA[:8], P[:8], T[:8])),
+    ],
+)
+def test_new_thermo_numpy_and_jax_agree(fn, args) -> None:
+    assert_numpy_jax_agree(fn, *args, rtol=1e-14)
+
+
+@needs_jax
+def test_new_thermo_under_transforms() -> None:
+    import jax
+    import jax.numpy as jnp
+
+    p, t, omega = (jnp.asarray(v[:16]) for v in (P, T, OMEGA))
+    for fn, args in (
+        (temperature_from_potential_temperature, (t, p)),
+        (vertical_velocity, (omega, p, t)),
+        (pressure_velocity, (omega, p, t)),
+    ):
+        eager = fn(*args)
+        np.testing.assert_allclose(jax.jit(fn)(*args), eager, rtol=1e-15)
+        np.testing.assert_allclose(jax.vmap(fn)(*args), eager, rtol=1e-15)
+        grads = jax.vmap(jax.grad(fn, argnums=(0, 1)))(*args)
+        assert all(bool(jnp.isfinite(g).all()) for g in grads)
