@@ -7,7 +7,7 @@ The house style (Python, maths notation, prose, pseudocode, reports) comes from 
 
 ## What this repo is
 
-geophysix is the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water: constants, the ellipsoid and the sphere, rotation, thermodynamics, the sea-water equation of state and column units. It is GeoNumerics tier 0, written on NumPy with JAX optional.
+geophysix is the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water: constants, the ellipsoid and the sphere, rotation, thermodynamics, the wind, the sea-water equation of state and column units. It is GeoNumerics tier 0, written on NumPy with JAX optional.
 
 People build on a package like this, so **the package is a library of primitives**: new code composes what is here, and anything genuinely new lands where the next person will find and reuse it.
 
@@ -21,6 +21,7 @@ The public API is the set of public modules below; private code lives in `src/ge
 | `earth` | The Earth's figure, `Ellipsoid` (`WGS84`, `GRS80`) and `sphere` (`SPHERE`, the IUGG mean radius), and the geometry on it |
 | `rotation` | The Coriolis parameter f, its gradient β and the β-plane |
 | `thermo` | The ideal gas, virtual and potential temperature, the Exner function, hypsometric thickness, pressure and vertical velocity |
+| `wind` | The horizontal wind's speed, bearing (`"from"` or `"to"`) and components |
 | `seawater` | The linear equation of state (`LinearEOS`, `LINEAR_EOS`), buoyancy, reduced gravity |
 | `columns` | Column units (`convert`), the dry-air column, mixing ratio ↔ column |
 
@@ -60,6 +61,7 @@ Before writing a helper, a constant, a conversion or a formula, find out whether
 | A haversine or great-circle distance | `geophysix.earth` (#19) |
 | A Coriolis parameter, `2 Ω sin φ`, or an Earth rotation rate | `geophysix.rotation.coriolis`, `beta`, `beta_plane`; Ω is `earth.rotation_rate` |
 | An ideal-gas law, a virtual or potential temperature (or T from θ), a hypsometric thickness, w from ω | `geophysix.thermo` |
+| A wind speed, a meteorological wind direction, or u and v from them | `geophysix.wind` |
 | A linear sea-water density, buoyancy or reduced gravity | `geophysix.seawater` |
 | A column-unit conversion, `p / (k_B T)`, a dry-air column, a molecules-per-area to mixing-ratio conversion | `geophysix.columns.convert`, `geophysix.thermo.number_density`, `geophysix.columns.dry_air_column`, `mixing_ratio_from_column` |
 | `xp = np if isinstance(x, np.ndarray) else jnp` | `geophysix._src.backend.array_namespace` |

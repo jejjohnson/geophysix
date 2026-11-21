@@ -10,6 +10,7 @@ The public API is the set of public modules below, plus the exceptions that `geo
 | [`geophysix.earth`](earth.md) | The ellipsoid and the sphere: records, coordinates, radii, cell areas, distances | available |
 | [`geophysix.rotation`](rotation.md) | The Coriolis parameter, β and the β-plane | available |
 | [`geophysix.thermo`](thermo.md) | The ideal gas, virtual and potential temperature, the Exner function, hypsometric thickness, pressure and vertical velocity | available |
+| [`geophysix.wind`](wind.md) | The horizontal wind's speed, bearing and components | available |
 | [`geophysix.seawater`](seawater.md) | The linear equation of state, buoyancy and reduced gravity | available |
 | [`geophysix.columns`](columns.md) | Column units, the dry-air column and mixing ratios | available |
 | [Type aliases](typing.md) | `ArrayLike` | available |

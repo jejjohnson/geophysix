@@ -12,6 +12,7 @@ nothing from the rest of the GeoStack.
 | `geophysix.earth` | the ellipsoid and the sphere |
 | `geophysix.rotation` | the Earth's rotation, Coriolis |
 | `geophysix.thermo` | atmospheric thermodynamics |
+| `geophysix.wind` | the horizontal wind's speed, bearing and components |
 | `geophysix.seawater` | the sea-water equation of state |
 | `geophysix.columns` | column units |
 
