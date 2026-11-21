@@ -14,7 +14,7 @@ Read "1. Public functions" and "The public API" under "The contracts" in `AGENTS
 
 ## 2. Pick its home
 
-Private code goes in `src/geophysix/_src/<module>/<topic>.py`; the public module (`constants`, `earth`, `rotation`, `thermo`, `seawater`, `columns`) re-exports it. The ownership test decides the module: a closed-form fact at a point belongs here, anything on a grid or a field belongs above (gridax, diagnostix). A new public module is created by its first feature issue. A new exception goes in `exceptions.py`, derives from `GeophysixError` and joins `tests/test_exceptions.py`.
+Private code goes in `src/geophysix/_src/<module>/<topic>.py`; the public module (`constants`, `earth`, `rotation`, `thermo`, `wind`, `seawater`, `columns`) re-exports it. The ownership test decides the module: a closed-form fact at a point belongs here, anything on a grid or a field belongs above (gridax, diagnostix). A new public module is created by its first feature issue. A new exception goes in `exceptions.py`, derives from `GeophysixError` and joins `tests/test_exceptions.py`.
 
 ## 3. Write it
 

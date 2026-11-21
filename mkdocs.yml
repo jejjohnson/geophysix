@@ -76,6 +76,7 @@ nav:
   - Earth: earth.md
   - Rotation: rotation.md
   - Thermodynamics: thermo.md
+  - Wind: wind.md
   - Columns: columns.md
   - Sea water: seawater.md
   - Type aliases: typing.md

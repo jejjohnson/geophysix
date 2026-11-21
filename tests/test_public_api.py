@@ -25,6 +25,7 @@ SUBMODULES = [
     "rotation",
     "seawater",
     "thermo",
+    "wind",
 ]
 
 

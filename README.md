@@ -15,7 +15,7 @@
 
 Physical constants, Earth geometry and atmospheric state, on NumPy with JAX optional.
 
-geophysix is the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water: constants, the ellipsoid and the sphere, rotation, thermodynamics, the sea-water equation of state and column units. It is GeoNumerics tier 0 and imports nothing from the rest of the stack.
+geophysix is the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water: constants, the ellipsoid and the sphere, rotation, thermodynamics, the wind, the sea-water equation of state and column units. It is GeoNumerics tier 0 and imports nothing from the rest of the stack.
 
 NumPy in gives NumPy out, and JAX is never imported unless you pass JAX arrays.
 
