@@ -25,6 +25,15 @@ def test_codata_exact_constants() -> None:
 def test_conventional_constants() -> None:
     assert STANDARD.standard_gravity == 9.80665
     assert STANDARD.standard_pressure == 101_325.0
+    assert STANDARD.standard_temperature == 288.15
+
+
+def test_isa_sea_level_density() -> None:
+    from geophysix.thermo import dry_air_density
+
+    # ISO 2533: ρ₀ = 1.2250 kg m⁻³ at p₀ = 101,325 Pa and T₀ = 288.15 K
+    rho = dry_air_density(STANDARD.standard_pressure, STANDARD.standard_temperature)
+    assert math.isclose(float(rho), 1.2250, rel_tol=1e-4)
 
 
 # --- G0-derived: derived values are properties of their parts ---
@@ -131,7 +140,7 @@ def test_records_are_pytrees() -> None:
     assert jax.tree_util.tree_unflatten(tree, leaves) == WGS84
     # the gas name is static metadata, not a leaf
     assert jax.tree_util.tree_leaves(CH4) == [CH4.molar_mass]
-    assert len(jax.tree_util.tree_leaves(STANDARD)) == 8
+    assert len(jax.tree_util.tree_leaves(STANDARD)) == 9
 
 
 @needs_jax

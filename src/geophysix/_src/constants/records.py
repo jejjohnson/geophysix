@@ -13,7 +13,7 @@ class Constants:
     """One convention's physical constants, SI throughout.
 
     The defaults are CODATA 2018 for the exact constants (k_B, N_A, h, c),
-    standard gravity g₀, the standard atmosphere p₀, and the dry-air values
+    standard gravity g₀, the standard atmosphere's p₀ and T₀, and the dry-air values
     used across the stack. Derived values (R, R_d, κ) are properties, never
     stored, so they cannot drift from their parts. A caller that wants
     another convention builds its own record and passes it in.
@@ -28,6 +28,8 @@ class Constants:
         dry_air_molar_mass: Molar mass of dry air M_dry, kg mol⁻¹.
         dry_air_heat_capacity: Specific heat of dry air at constant pressure
             c_p, J kg⁻¹ K⁻¹.
+        standard_temperature: The International Standard Atmosphere's
+            sea-level temperature T₀, K.
 
     Examples:
         >>> import math
@@ -49,6 +51,7 @@ class Constants:
     standard_pressure: float = 101_325.0
     dry_air_molar_mass: float = 0.0289644
     dry_air_heat_capacity: float = 1004.5
+    standard_temperature: float = 288.15
 
     @property
     def gas_constant(self) -> float:
