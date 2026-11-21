@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.4](https://github.com/jejjohnson/geophysix/compare/v0.0.3...v0.0.4) (2026-11-21)
+
+
+### Features
+
+* **constants:** the ISA sea-level temperature, standard_temperature = 288.15 K ([#47](https://github.com/jejjohnson/geophysix/issues/47)) ([74dc7a4](https://github.com/jejjohnson/geophysix/commit/74dc7a45545db1b0b33b43fc8960258543745d33)), closes [#42](https://github.com/jejjohnson/geophysix/issues/42)
+* **earth:** the radius of a parallel and the length of a degree of latitude and longitude ([#48](https://github.com/jejjohnson/geophysix/issues/48)) ([350b4a4](https://github.com/jejjohnson/geophysix/commit/350b4a44f7fca887596974ebdd7e6c8ad5047f4d)), closes [#43](https://github.com/jejjohnson/geophysix/issues/43)
+* **thermo:** temperature from potential temperature, and vertical velocity from pressure velocity ([#49](https://github.com/jejjohnson/geophysix/issues/49)) ([94bf770](https://github.com/jejjohnson/geophysix/commit/94bf770cb1dc1b6146255ff77dbd456f056590c4)), closes [#44](https://github.com/jejjohnson/geophysix/issues/44) [#45](https://github.com/jejjohnson/geophysix/issues/45)
+* **wind:** wind speed, direction and components, in a new module ([#50](https://github.com/jejjohnson/geophysix/issues/50)) ([2a57ad3](https://github.com/jejjohnson/geophysix/commit/2a57ad3a249ccbf6e6bcdfc2e0d3ed1a9f0dd36e)), closes [#46](https://github.com/jejjohnson/geophysix/issues/46)
+
 ## [0.0.3](https://github.com/jejjohnson/geophysix/compare/v0.0.2...v0.0.3) (2026-11-20)
 
 
