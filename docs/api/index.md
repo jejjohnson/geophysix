@@ -9,7 +9,7 @@ The public API is the set of public modules below, plus the exceptions that `geo
 | [`geophysix.constants`](constants.md) | CODATA 2018 constants, standard gravity, dry air and trace gases | available |
 | [`geophysix.earth`](earth.md) | The ellipsoid and the sphere: records, coordinates, radii, cell areas, distances | available |
 | [`geophysix.rotation`](rotation.md) | The Coriolis parameter, β and the β-plane | available |
-| [`geophysix.thermo`](thermo.md) | The ideal gas, virtual and potential temperature, the Exner function, hypsometric thickness | available |
+| [`geophysix.thermo`](thermo.md) | The ideal gas, virtual and potential temperature, the Exner function, hypsometric thickness, pressure and vertical velocity | available |
 | [`geophysix.seawater`](seawater.md) | The linear equation of state, buoyancy and reduced gravity | available |
 | [`geophysix.columns`](columns.md) | Column units, the dry-air column and mixing ratios | available |
 | [Type aliases](typing.md) | `ArrayLike` | available |

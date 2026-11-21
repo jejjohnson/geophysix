@@ -1,5 +1,5 @@
 """The thermodynamics of air: the ideal gas, virtual and potential temperature,
-the Exner function and hypsometric thickness.
+the Exner function, hypsometric thickness, and pressure and vertical velocity.
 
 Each function takes the constants record as ``constants=`` (``STANDARD`` by
 default).
@@ -13,6 +13,9 @@ from geophysix._src.thermo.gas import (
     hypsometric_thickness,
     number_density,
     potential_temperature,
+    pressure_velocity,
+    temperature_from_potential_temperature,
+    vertical_velocity,
     virtual_temperature,
 )
 
@@ -23,5 +26,8 @@ __all__ = [
     "hypsometric_thickness",
     "number_density",
     "potential_temperature",
+    "pressure_velocity",
+    "temperature_from_potential_temperature",
+    "vertical_velocity",
     "virtual_temperature",
 ]
