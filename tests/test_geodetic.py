@@ -11,15 +11,19 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from _backends import assert_numpy_jax_agree, needs_jax
-from _oracles import ecef_from_geodetic, wgs84_transformer
+from _oracles import ecef_from_geodetic, geod_inverse, wgs84_transformer
 from hypothesis import given, settings, strategies as st
 
 from geophysix._src.backend import array_namespace
 from geophysix.earth import (
+    SPHERE,
     WGS84,
     ecef_to_geodetic,
     geodetic_to_ecef,
+    meridian_degree_length,
     meridional_radius,
+    parallel_degree_length,
+    parallel_radius,
     prime_vertical_radius,
     sphere,
 )
@@ -129,6 +133,58 @@ def test_radians() -> None:
     np.testing.assert_allclose(lat, np.deg2rad(LAT), atol=1e-11)
 
 
+# --- the parallel's radius and the length of a degree ---
+
+
+def test_degree_lengths_reference_values() -> None:
+    # computed from WGS84 and SPHERE: a (1 − e²) π/180, a / √(1 − e²) π/180, a π/180
+    np.testing.assert_allclose(meridian_degree_length(0.0), 110_574.27582, rtol=1e-9)
+    np.testing.assert_allclose(meridian_degree_length(90.0), 111_693.97956, rtol=1e-9)
+    np.testing.assert_allclose(parallel_degree_length(0.0), 111_319.49079, rtol=1e-9)
+    np.testing.assert_allclose(parallel_radius(0.0), WGS84.semi_major, rtol=1e-15)
+
+
+@pytest.mark.parametrize("lat", [0.0, 45.0, 80.0])
+def test_degree_lengths_match_pyproj(lat: float) -> None:
+    # a 0.001° step: the geodesic and the arc agree far below 1e-8 relative
+    step = 1e-3
+    along_meridian = geod_inverse(0.0, lat - step / 2, 0.0, lat + step / 2) / step
+    along_parallel = geod_inverse(0.0, lat, step, lat) / step
+    np.testing.assert_allclose(meridian_degree_length(lat), along_meridian, rtol=1e-8)
+    np.testing.assert_allclose(parallel_degree_length(lat), along_parallel, rtol=1e-8)
+
+
+@given(st.floats(-90.0, 90.0))
+@settings(max_examples=50, deadline=None)
+def test_degree_lengths_on_a_sphere(lat: float) -> None:
+    per_degree = SPHERE.semi_major * np.pi / 180.0
+    np.testing.assert_allclose(
+        meridian_degree_length(lat, earth=SPHERE), per_degree, rtol=1e-15
+    )
+    np.testing.assert_allclose(
+        parallel_degree_length(lat, earth=SPHERE),
+        per_degree * np.cos(np.deg2rad(lat)),
+        rtol=1e-12,
+        atol=1e-9,
+    )
+
+
+def test_meridian_length_grows_towards_the_poles() -> None:
+    lengths = meridian_degree_length(np.linspace(0.0, 90.0, 91))
+    assert bool(np.all(np.diff(lengths) > 0.0))
+
+
+def test_parallel_radius_at_the_poles() -> None:
+    np.testing.assert_allclose(parallel_radius([90.0, -90.0]), 0.0, atol=1e-9)
+
+
+def test_degree_lengths_in_radians() -> None:
+    for fn in (parallel_radius, meridian_degree_length, parallel_degree_length):
+        np.testing.assert_allclose(
+            fn(np.deg2rad(LAT), degrees=False), fn(LAT), rtol=1e-14, atol=1e-9
+        )
+
+
 # --- backends and transforms ---
 
 
@@ -138,6 +194,9 @@ def test_radians() -> None:
         (_stack(geodetic_to_ecef), (LON[:8], LAT[:8], HEIGHT[:8])),
         (prime_vertical_radius, (LAT[:8],)),
         (meridional_radius, (LAT[:8],)),
+        (parallel_radius, (LAT[:8],)),
+        (meridian_degree_length, (LAT[:8],)),
+        (parallel_degree_length, (LAT[:8],)),
     ],
 )
 def test_numpy_and_jax_agree(fn, args) -> None:
@@ -208,3 +267,17 @@ def test_float32_stays_float32() -> None:
     out = geodetic_to_ecef(np.float32([1.0, 2.0]), lat, 0.0)
     assert all(v.dtype == np.float32 for v in out)
     assert prime_vertical_radius(lat).dtype == np.float32
+
+
+@needs_jax
+def test_degree_lengths_under_transforms() -> None:
+    import jax
+    import jax.numpy as jnp
+
+    lat = jnp.asarray(LAT[:16])
+    for fn in (parallel_radius, meridian_degree_length, parallel_degree_length):
+        eager = fn(lat)
+        np.testing.assert_allclose(jax.jit(fn)(lat), eager, rtol=1e-15)
+        np.testing.assert_allclose(jax.vmap(fn)(lat), eager, rtol=1e-15)
+        grads = jax.vmap(jax.grad(fn))(lat)
+        assert bool(jnp.isfinite(grads).all())

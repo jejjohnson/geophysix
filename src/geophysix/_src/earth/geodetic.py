@@ -72,6 +72,97 @@ def meridional_radius(
     return a * (1.0 - e2) / (1.0 - e2 * xp.sin(phi) ** 2) ** 1.5
 
 
+def parallel_radius(lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True) -> Any:
+    """The radius of the parallel (the circle of latitude) at φ.
+
+    r(φ) = N(φ) cos φ,  N(φ) = a / √(1 − e² sin²φ)
+
+    the distance from the polar axis to a point on the ellipsoid at φ. At the
+    poles cos φ is 0 only to rounding, so r is about 4e-10 m in float64.
+
+    Args:
+        lat: Geodetic latitude φ, degrees (radians with ``degrees=False``).
+        earth: The body; WGS84 by default.
+        degrees: Whether ``lat`` is in degrees.
+
+    Returns:
+        r, m, in ``lat``'s shape, namespace and dtype.
+
+    Examples:
+        >>> import numpy as np
+        >>> from geophysix.earth import WGS84, parallel_radius, sphere
+        >>> bool(np.isclose(parallel_radius(0.0), WGS84.semi_major))
+        True
+        >>> bool(np.isclose(parallel_radius(60.0, earth=sphere(2.0)), 1.0))
+        True
+    """
+    xp, (lat,) = floating_inputs(lat, params=(earth.semi_major, earth.flattening))
+    phi = lat * like(_DEG, lat, xp) if degrees else lat
+    # r(φ) = N(φ) cos φ
+    return prime_vertical_radius(phi, earth=earth, degrees=False) * xp.cos(phi)
+
+
+def meridian_degree_length(
+    lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True
+) -> Any:
+    """The length of one degree of latitude along the meridian at φ.
+
+    Δy = M(φ) π / 180,  M(φ) = a (1 − e²) / (1 − e² sin²φ)^(3/2)
+
+    the local arc length per degree at φ. The arc from φ to φ + 1° differs
+    from it by a relative O(e² × 1°), about 1e-4 at most on WGS84; on a sphere
+    of radius R it is R π / 180 everywhere.
+
+    Args:
+        lat: Geodetic latitude φ, degrees (radians with ``degrees=False``).
+        earth: The body; WGS84 by default.
+        degrees: Whether ``lat`` is in degrees.
+
+    Returns:
+        Δy, m per degree, in ``lat``'s shape, namespace and dtype.
+
+    Examples:
+        >>> from geophysix.earth import SPHERE, meridian_degree_length
+        >>> round(float(meridian_degree_length(0.0)), 3)
+        110574.276
+        >>> round(float(meridian_degree_length(45.0, earth=SPHERE)), 3)
+        111195.08
+    """
+    xp, (lat,) = floating_inputs(lat, params=(earth.semi_major, earth.flattening))
+    phi = lat * like(_DEG, lat, xp) if degrees else lat
+    # Δy = M(φ) π / 180
+    return meridional_radius(phi, earth=earth, degrees=False) * like(_DEG, lat, xp)
+
+
+def parallel_degree_length(
+    lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True
+) -> Any:
+    """The length of one degree of longitude along the parallel at φ.
+
+    Δx = N(φ) cos φ π / 180
+
+    exactly, since the parallel is a circle of radius r(φ) = N(φ) cos φ
+    (`parallel_radius`). At the poles it is 0 to rounding.
+
+    Args:
+        lat: Geodetic latitude φ, degrees (radians with ``degrees=False``).
+        earth: The body; WGS84 by default.
+        degrees: Whether ``lat`` is in degrees.
+
+    Returns:
+        Δx, m per degree, in ``lat``'s shape, namespace and dtype.
+
+    Examples:
+        >>> from geophysix.earth import parallel_degree_length
+        >>> round(float(parallel_degree_length(0.0)), 3)
+        111319.491
+    """
+    xp, (lat,) = floating_inputs(lat, params=(earth.semi_major, earth.flattening))
+    phi = lat * like(_DEG, lat, xp) if degrees else lat
+    # Δx = r(φ) π / 180
+    return parallel_radius(phi, earth=earth, degrees=False) * like(_DEG, lat, xp)
+
+
 def geodetic_to_ecef(
     lon: Any,
     lat: Any,
