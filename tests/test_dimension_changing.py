@@ -33,7 +33,7 @@ def pressure(xr):
 def temperature(xr):
     coords = {
         "level": [1000, 800, 500],
-        "x": [1, 2, 3],
+        "x": ("x", [1, 2, 3], {"units": "km"}),
         "z": ("level", [0.0, 2e3, 5e3]),
     }
     attrs = {"units": "K"}
@@ -53,6 +53,7 @@ def test_the_order_of_the_dimensions_does_not_matter(pressure, temperature) -> N
 def test_only_the_coordinates_of_the_levels_go(pressure, temperature) -> None:
     out = hypsometric_thickness(pressure, temperature, dim="level")
     assert set(out.coords) == {"x"}
+    assert out.x.attrs == {"units": "km"}
     assert out.name is None
     assert out.attrs == {}
 

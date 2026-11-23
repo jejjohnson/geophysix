@@ -7,9 +7,9 @@ import inspect
 import numpy as np
 import pytest
 from _backends import needs_jax
+from pipekit_array.functions import elementwise, is_dataarray
 
-from geophysix import BackendError, GeophysixError
-from geophysix._src.labelled import elementwise, is_dataarray
+from geophysix import BackendError
 from geophysix.columns import convert
 from geophysix.constants import CH4
 from geophysix.earth import ecef_to_geodetic, geodetic_to_ecef, sphere
@@ -29,7 +29,7 @@ def temperature(xr):
         np.asarray([[280.0, 290.0], [250.0, 260.0]], dtype=np.float32),
         dims=("level", "x"),
         coords={
-            "level": [1000, 800],
+            "level": ("level", [1000, 800], {"units": "hPa"}),
             "x": [1, 2],
             "height": ("level", [100.0, 2000.0]),
         },
@@ -65,6 +65,7 @@ def test_coordinates_stay_and_the_name_and_attributes_go(pressure, temperature) 
     assert set(out.coords) == {"level", "x", "height"}
     assert out.name is None
     assert out.attrs == {}
+    assert out.level.attrs == {"units": "hPa"}
     assert out.dtype == np.float32
 
 
@@ -95,7 +96,7 @@ def test_mismatched_coordinates_raise(pressure, temperature) -> None:
 
 @pytest.mark.parametrize("plain", [np.ones(2), [1e5, 8e4], (1e5, 8e4)])
 def test_an_array_without_names_is_not_guessed(temperature, plain) -> None:
-    with pytest.raises(GeophysixError, match="'pressure' has dimensions but no names"):
+    with pytest.raises(ValueError, match="'pressure' has dimensions but no names"):
         number_density(plain, temperature)
 
 

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from geophysix._src._arrays import floating_inputs, like
+from pipekit_array.functions import elementwise, floating_inputs, like
+
 from geophysix._src.constants.records import STANDARD, Constants, Gas
-from geophysix._src.labelled import elementwise
 from geophysix.exceptions import UnitError
 
 

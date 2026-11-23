@@ -5,9 +5,9 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from geophysix._src._arrays import floating_inputs, like
+from pipekit_array.functions import elementwise, floating_inputs, like
+
 from geophysix._src.earth.records import WGS84, Ellipsoid
-from geophysix._src.labelled import elementwise
 
 
 _DEG = math.pi / 180.0

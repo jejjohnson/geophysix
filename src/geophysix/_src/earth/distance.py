@@ -5,10 +5,10 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from geophysix._src._arrays import floating_inputs, like
+from pipekit_array.functions import elementwise, floating_inputs, like
+
 from geophysix._src._records import is_concrete
 from geophysix._src.earth.records import SPHERE, Ellipsoid
-from geophysix._src.labelled import elementwise
 from geophysix.exceptions import EarthError
 
 

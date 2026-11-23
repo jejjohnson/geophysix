@@ -16,7 +16,7 @@ The public API is the set of public modules below; private code lives in `src/ge
 | Module | Owns |
 |---|---|
 | `_typing.py` | The `ArrayLike` type alias |
-| `exceptions.py` | `GeophysixError` (a `ValueError`) and its subclasses `BackendError`, `EarthError`, `UnitError`, `RangeError` |
+| `exceptions.py` | `GeophysixError` (a `ValueError`) and its subclasses `EarthError`, `UnitError`, `RangeError`; pipekit's `BackendError` |
 | `constants` | `Constants` (CODATA 2018, standard gravity, the standard atmosphere, dry air) as `STANDARD`, and `Gas` records (`CH4`, `CO2`, `H2O`, `N2O`, `CO`) |
 | `earth` | The Earth's figure, `Ellipsoid` (`WGS84`, `GRS80`) and `sphere` (`SPHERE`, the IUGG mean radius), and the geometry on it |
 | `rotation` | The Coriolis parameter f, its gradient β and the β-plane |
@@ -27,8 +27,8 @@ The public API is the set of public modules below; private code lives in `src/ge
 
 ### Boundaries
 
-- **Layer rule.** geophysix is GeoNumerics tier 0 and imports nothing from the GeoStack. It never imports gridax, diagnostix, pipekit, geotoolz or any GeoModels library; they import it.
-- **Two runtime dependencies**: `numpy>=2.0` and `array-api-compat` (decided in #55). JAX and xarray are extras, and any other optional one goes behind an extra and an in-function import that names the extra when it is missing.
+- **Layer rule.** geophysix is GeoNumerics tier 0. Of the GeoStack it imports the array backend `pipekit_array.functions` and nothing else (pipekit is Core, below GeoNumerics; decided in jejjohnson/pipekit#244). It never imports the operators or carriers of pipekit, gridax, diagnostix, geotoolz or any GeoModels library; the last four import it.
+- **Two runtime dependencies**: `numpy>=2.0` and `pipekit-array[numpy,compat]`, which brings pipekit-ops and `array-api-compat`. pipekit is pinned to one git tag until it is on PyPI (jejjohnson/pipekit#247). JAX and xarray are extras, and any other optional one goes behind an extra and an in-function import that names the extra when it is missing.
 - **Ownership test.** A closed-form fact about the Earth, its air or its sea water, evaluated at a point, belongs here. Anything on a grid or a field belongs above (gridax, diagnostix).
 
 When other projects build on the package, list them here and keep their imports working: a rename or removal of a public name goes through a deprecation (the old name keeps working with a `DeprecationWarning` that names the replacement for at least one release).
@@ -40,7 +40,7 @@ Each foundation brings a rule. Breaking one runs fine on your machine and fails 
 | Foundation | The package uses it for | The rule it brings |
 |---|---|---|
 | **NumPy ≥ 2.0** | The default namespace; every function runs on it | NumPy in gives NumPy out; no function needs JAX or xarray installed. |
-| **array-api-compat** | Finding the namespace and the device of an input | Only functions of the array API standard are called on it; `array_api_strict` in the tests refuses the rest. |
+| **pipekit-array** (`pipekit_array.functions`) | The namespace, the dtype and the device of a call, and DataArrays | A change to them is made there, so that radiomax and gridax get it too. Only functions of the array API standard are called on the namespace; `array_api_strict` in the tests refuses the rest. |
 | **JAX** (optional extra `jax`) | The same functions under `jit`, `vmap` and `grad` | Never imported at module level; used only when the caller passes JAX arrays, or a record that holds one. |
 | **xarray** (extra `xarray`) | A DataArray in, a DataArray out | Never imported; looked up in `sys.modules` once a DataArray can exist. |
 | **`dataclasses`** | Records such as an ellipsoid | `frozen=True`, `slots=True`, floats only, passed as keyword arguments with defaults. |
@@ -66,11 +66,11 @@ Before writing a helper, a constant, a conversion or a formula, find out whether
 | A wind speed, a meteorological wind direction, or u and v from them | `geophysix.wind` |
 | A linear sea-water density, buoyancy or reduced gravity | `geophysix.seawater` |
 | A column-unit conversion, `p / (k_B T)`, a dry-air column, a molecules-per-area to mixing-ratio conversion | `geophysix.columns.convert`, `geophysix.thermo.number_density`, `geophysix.columns.dry_air_column`, `mixing_ratio_from_column` |
-| `xp = np if isinstance(x, np.ndarray) else jnp`, or `x.astype(float)` on an input | `geophysix._src.backend.array_namespace`, `geophysix._src._arrays.floating_inputs` |
-| `isinstance(x, xr.DataArray)`, or a call to `xr.apply_ufunc` | `@elementwise`, `apply_along` for a function that changes the length of a named dimension, and `is_dataarray`, from `geophysix._src.labelled` |
-| A constant as an array of the input's dtype, on its device | `geophysix._src._arrays.like` |
+| `xp = np if isinstance(x, np.ndarray) else jnp`, or `x.astype(float)` on an input | `namespace_of`, `floating_inputs` from `pipekit_array.functions` |
+| `isinstance(x, xr.DataArray)`, or a call to `xr.apply_ufunc` | `@elementwise` and `is_dataarray` from `pipekit_array.functions`; `geophysix._src.labelled.apply_along` for a function that changes the length of a named dimension |
+| A constant as an array of the input's dtype, on its device | `pipekit_array.functions.like` |
 | A frozen record that must cross `jit` | `geophysix._src._records.register_record` (and `is_concrete` for checks that skip tracers) |
-| A new exception for a bad body, unit or latitude, or for an unknown array library | `EarthError`, `UnitError`, `RangeError`, `BackendError` |
+| A new exception for a bad body, unit or latitude | `EarthError`, `UnitError`, `RangeError` |
 
 ## The contracts
 
@@ -79,7 +79,7 @@ Everything composes because it keeps these contracts; the tests in "What enforce
 ### 1. Public functions
 
 - **Arrays.** One implementation in functions of the Python array API standard. `xp, (x, y) = floating_inputs(x, y)` opens every function. The namespace comes from the inputs: NumPy in gives NumPy out, JAX in gives JAX out, and the same for every array-API library; Python numbers, sequences and NumPy arrays join the other library. An unknown array, or two other libraries in one call, raise `BackendError`. JAX is never imported at module level.
-- **xarray.** A DataArray in gives a DataArray out, aligned by dimension name; `@elementwise` on the public function does it (`n_outputs=` above one). The result has the dimensions of all the inputs, their coordinates, no name and no attributes. An unlabelled array with dimensions next to a DataArray raises `GeophysixError`. `cell_area` (`dims=`) and `hypsometric_thickness` (`dim=`) change a dimension's length, so with DataArrays they need its name; they go through `apply_along`.
+- **xarray.** A DataArray in gives a DataArray out, aligned by dimension name; `@elementwise` on the public function does it (`n_outputs=` above one). It takes every other carrier with a pipekit adapter too (`DimArray`, `GeoArray`). The result has the dimensions of all the inputs, their coordinates, no name and no attributes. An unlabelled array with dimensions next to a DataArray raises `ValueError`. The coordinates keep their attributes. `cell_area` (`dims=`) and `hypsometric_thickness` (`dim=`) change a dimension's length, so with DataArrays they need its name; they go through `apply_along`.
 - **dtype and device.** float32 stays float32; integer arrays become the namespace's default float. A constant enters through `like`, in the input's dtype and on its device. An array of the call's library is cast with `astype(copy=False)` and never rebuilt with `asarray`, which detaches a torch tensor in torch 2.5 and 2.10.
 - **SI units everywhere.** Metres, kilograms, seconds, kelvin, pascals. Angles are degrees or radians by an explicit argument, never by guessing from the magnitude.
 - **Records.** Parameters that belong together (an ellipsoid, a gas) are frozen `dataclasses` of floats, passed as keyword arguments with a default (decided in #14).
@@ -89,7 +89,7 @@ Everything composes because it keeps these contracts; the tests in "What enforce
 
 ### 2. Exceptions
 
-- Every error derives from `GeophysixError`, which is a `ValueError`: `BackendError` (an array of an unknown library, or of several in one call), `EarthError` (a bad body), `UnitError` (an unknown unit), `RangeError` (a latitude out of range). A new error goes into `exceptions.py`, is exported, and joins the list in `tests/test_exceptions.py`.
+- Every error derives from `GeophysixError`, which is a `ValueError`: `EarthError` (a bad body), `UnitError` (an unknown unit), `RangeError` (a latitude out of range). The one exception is the array backend, which is shared: pipekit's `BackendError` (a `TypeError` and a `ValueError`) for an array of an unknown library, or of several in one call, and a plain `ValueError` for an input that is not real or an unlabelled array next to a DataArray. A new error goes into `exceptions.py`, is exported, and joins the list in `tests/test_exceptions.py`.
 
 ### The public API
 
@@ -110,7 +110,7 @@ Most rules here are tests, so CI tells you when one breaks. Read a test's docstr
 | CI job "geophysix without JAX and xarray" | The install with no extras passes the tests |
 | CI job "geophysix on torch" | The same on CPU torch 2.10, which the other jobs do not install |
 | `--doctest-modules` on `src/geophysix` (`addopts`) | Every docstring `Examples:` block runs and prints what it says |
-| `tests/test_exceptions.py` | The hierarchy: every error is a `GeophysixError`, which is a `ValueError` |
+| `tests/test_exceptions.py` | The hierarchy: every error is a `GeophysixError`, which is a `ValueError`; `BackendError` is pipekit's |
 | `tests/test_build_docs.py` | The two-tool docs pipeline: inventory parsing, anchor repair, link checking, the inventory port and the absolute nav URL in `docs/myst.yml`, the files copied to the site root (`ROOT_FILES`) |
 | `tests/conftest.py` | `jax_enable_x64` is on whenever JAX is importable |
 | `[tool.coverage.report] fail_under = 90` | Coverage of `src/geophysix` in every coverage-enabled run (CI, `uv run poe test-cov`) |

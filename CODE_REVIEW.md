@@ -38,18 +38,18 @@ Skip anything ruff, ty or the tests already enforce (formatting, import order, `
 
 - Every function, class or module the diff **adds** has been checked against [`docs/api/capabilities.md`](docs/api/capabilities.md) and the private helpers in "Reuse before you write" in `AGENTS.md`. A re-implemented Earth radius, gravity, haversine, Coriolis or ideal-gas formula is a **High** finding, with the existing name to use.
 - No new runtime dependency without discussion; an optional one sits behind an extra and an in-function import that names the extra. `uv.lock` is updated with any dependency change.
-- Imports keep pointing one way (the module table in `AGENTS.md`); the library never imports gridax, diagnostix, pipekit, geotoolz or any model.
+- Imports keep pointing one way (the module table in `AGENTS.md`); the library never imports gridax, diagnostix, geotoolz or any model, and of pipekit only `pipekit_array.functions`.
 - A rename or removal of a public name keeps the old name working with a `DeprecationWarning` for at least one release.
 
 ### 2. The contracts
 
-- **Array namespace.** A function opens with `floating_inputs` (`geophysix._src._arrays`) and calls only functions of the array API standard; NumPy in gives NumPy out, and the same for every array-API library; an unknown array raises `BackendError`; JAX is never imported at module level.
+- **Array namespace.** A function opens with `floating_inputs` (`pipekit_array.functions`) and calls only functions of the array API standard; NumPy in gives NumPy out, and the same for every array-API library; an unknown array raises `BackendError`; JAX is never imported at module level.
 - **Constants** enter in the input's dtype (`xp.asarray(c, dtype=x.dtype)`); float32 in gives float32 out.
 - **Units.** SI everywhere; degrees versus radians by an explicit argument, never by the magnitude of the input.
 - **Records** are frozen dataclasses of floats, passed as keyword arguments with defaults.
 - **Limits.** The poles and `e = 0` return the correct limit, not `nan`; a gradient through a branch uses the double `where`.
 - **Pure.** Return a new array and never mutate the input.
-- **Exceptions** derive from `GeophysixError` (a `ValueError`): `BackendError`, `EarthError`, `UnitError`, `RangeError`; errors are chained (`raise … from err`).
+- **Exceptions** derive from `GeophysixError` (a `ValueError`): `EarthError`, `UnitError`, `RangeError`, except those of the array backend (`AGENTS.md`); errors are chained (`raise … from err`).
 
 ### 3. Public API and documentation
 

@@ -7,9 +7,10 @@ from __future__ import annotations
 import functools
 from typing import Any
 
-from geophysix._src._arrays import floating_inputs, like
+from pipekit_array.functions import elementwise, floating_inputs, is_dataarray, like
+
 from geophysix._src.constants.records import H2O, STANDARD, Constants, Gas
-from geophysix._src.labelled import apply_along, elementwise, is_dataarray
+from geophysix._src.labelled import apply_along
 from geophysix.exceptions import GeophysixError
 
 

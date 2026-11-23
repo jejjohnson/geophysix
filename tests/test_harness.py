@@ -12,10 +12,7 @@ import pytest
 from _backends import HAS_JAX, KINDS, assert_backends_agree, needs_jax
 from _oracles import ecef_from_geodetic, geod_inverse, gsw_module
 from hypothesis import given, strategies as st
-
-from geophysix._src._arrays import floating_inputs, like
-from geophysix._src.backend import array_namespace
-from geophysix._src.labelled import elementwise
+from pipekit_array.functions import elementwise, floating_inputs, like, namespace_of
 
 
 @elementwise()
@@ -71,7 +68,7 @@ def test_the_check_catches_a_promoted_float32() -> None:
 
 def test_the_check_catches_a_constant_on_the_default_device() -> None:
     def misplaces(x):
-        return x * array_namespace(x).asarray(2.0, dtype=x.dtype)
+        return x * namespace_of(x).asarray(2.0, dtype=x.dtype)
 
     second = [kind for kind in KINDS if kind.name == "second device"]
     with pytest.raises(ValueError, match="two different devices"):

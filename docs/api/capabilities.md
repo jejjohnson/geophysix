@@ -12,13 +12,20 @@ current).
 
 ## `geophysix`
 
+### Exception hierarchy for `geophysix`. (`geophysix.exceptions`)
+
 | Name | Kind | What it does |
 |---|---|---|
-| `BackendError` | class | Raised for an array of an unknown library, or of several in one call. |
 | `EarthError` | class | Raised for a bad body, such as an unknown ellipsoid or sphere name. |
 | `GeophysixError` | class | Base class for every exception raised by ``geophysix``. |
 | `RangeError` | class | Raised for a latitude out of range. |
 | `UnitError` | class | Raised for an unknown unit. |
+
+### Re-exported from other libraries
+
+| Name | Kind | What it does |
+|---|---|---|
+| `BackendError` | class | Re-exported from `pipekit_ops`. |
 
 ## `geophysix.columns`
 

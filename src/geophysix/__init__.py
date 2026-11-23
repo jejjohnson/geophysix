@@ -2,7 +2,7 @@
 
 ``geophysix`` is the stack's library of closed-form physical facts about the
 Earth, its air and its sea water. It sits at tier 0 of GeoNumerics and imports
-nothing from the rest of the GeoStack.
+nothing from the rest of the GeoStack but the array backend of pipekit-array.
 
 ## Planned modules
 
