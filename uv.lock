@@ -547,11 +547,11 @@ wheels = [
 
 [[package]]
 name = "geophysix"
-version = "0.0.4"
+version = "0.0.5"
 source = { editable = "." }
 dependencies = [
-    { name = "array-api-compat" },
     { name = "numpy" },
+    { name = "pipekit-array", extra = ["compat", "numpy"] },
 ]
 
 [package.optional-dependencies]
@@ -597,9 +597,9 @@ typecheck = [
 
 [package.metadata]
 requires-dist = [
-    { name = "array-api-compat", specifier = ">=1.11" },
     { name = "jax", marker = "extra == 'jax'", specifier = ">=0.4.30" },
     { name = "numpy", specifier = ">=2.0" },
+    { name = "pipekit-array", extras = ["numpy", "compat"], git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-array&tag=pipekit-ops-v0.2.2" },
     { name = "xarray", marker = "extra == 'xarray'", specifier = ">=2024.6" },
 ]
 provides-extras = ["jax", "xarray"]
@@ -1764,6 +1764,27 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/e4/04/62bcd9f844984c5938d3b05264a61d797a29d3e0812341a8204af70bbdee/pillow-12.3.0-cp315-cp315t-win_amd64.whl", hash = "sha256:8cd2f7bdda092d99c9fc2fb7391354f306d01443d22785d0cbfafa2e2c8bb418", size = 7243537, upload-time = "2026-07-01T11:56:21.214Z" },
     { url = "https://files.pythonhosted.org/packages/3d/68/1f3066acedf37673694a7141381d8f811ae97f30d34413d236abe7d489f1/pillow-12.3.0-cp315-cp315t-win_arm64.whl", hash = "sha256:06ff022112bc9cbf83b60f8e028d94ad87b60621706487e65f673de61610ab59", size = 2567491, upload-time = "2026-07-01T11:56:23.506Z" },
 ]
+
+[[package]]
+name = "pipekit-array"
+version = "0.1.2"
+source = { git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-array&tag=pipekit-ops-v0.2.2#49beb8fe4a8a6ce5662bc75ad495067a9e6ea6ce" }
+dependencies = [
+    { name = "pipekit-ops" },
+]
+
+[package.optional-dependencies]
+compat = [
+    { name = "array-api-compat" },
+]
+numpy = [
+    { name = "numpy" },
+]
+
+[[package]]
+name = "pipekit-ops"
+version = "0.2.2"
+source = { git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-ops&tag=pipekit-ops-v0.2.2#49beb8fe4a8a6ce5662bc75ad495067a9e6ea6ce" }
 
 [[package]]
 name = "platformdirs"

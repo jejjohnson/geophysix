@@ -27,7 +27,7 @@ The public API is the set of public modules below; private code lives in `src/ge
 
 ### Boundaries
 
-- **Layer rule.** geophysix is GeoNumerics tier 0. Of the GeoStack it imports the array backend `pipekit_array.functions`, and `pipekit_ops.BackendError` with it (pipekit is Core, below GeoNumerics; decided in jejjohnson/pipekit#244), and nothing else. It never imports the operators or carriers of pipekit, gridax, diagnostix, geotoolz or any GeoModels library; the last four import it.
+- **Layer rule.** geophysix is GeoNumerics tier 0. Of the GeoStack it imports the array backend `pipekit_array.functions` and nothing else (pipekit is Core, below GeoNumerics; decided in jejjohnson/pipekit#244). It never imports the operators or carriers of pipekit, gridax, diagnostix, geotoolz or any GeoModels library; the last four import it.
 - **Two runtime dependencies**: `numpy>=2.0` and `pipekit-array[numpy,compat]`, which brings pipekit-ops and `array-api-compat`. pipekit is pinned to one git tag until it is on PyPI (jejjohnson/pipekit#247). JAX and xarray are extras, and any other optional one goes behind an extra and an in-function import that names the extra when it is missing.
 - **Ownership test.** A closed-form fact about the Earth, its air or its sea water, evaluated at a point, belongs here. Anything on a grid or a field belongs above (gridax, diagnostix).
 
