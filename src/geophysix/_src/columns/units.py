@@ -6,6 +6,7 @@ from typing import Any
 
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.constants.records import STANDARD, Constants, Gas
+from geophysix._src.labelled import elementwise
 from geophysix.exceptions import UnitError
 
 
@@ -43,6 +44,7 @@ def _from_mol_m2(value, units, gas, pressure, temperature, constants, xp):
     return 1e6 * value * molar_volume
 
 
+@elementwise()
 def convert(
     value: Any,
     units_in: str,

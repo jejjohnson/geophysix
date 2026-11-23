@@ -7,11 +7,13 @@ from typing import Any
 
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.earth.records import WGS84, Ellipsoid
+from geophysix._src.labelled import elementwise
 
 
 _DEG = math.pi / 180.0
 
 
+@elementwise()
 def prime_vertical_radius(
     lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True
 ) -> Any:
@@ -43,6 +45,7 @@ def prime_vertical_radius(
     return a / xp.sqrt(1.0 - e2 * xp.sin(phi) ** 2)
 
 
+@elementwise()
 def meridional_radius(
     lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True
 ) -> Any:
@@ -72,6 +75,7 @@ def meridional_radius(
     return a * (1.0 - e2) / (1.0 - e2 * xp.sin(phi) ** 2) ** 1.5
 
 
+@elementwise()
 def parallel_radius(lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True) -> Any:
     """The radius of the parallel (the circle of latitude) at φ.
 
@@ -102,6 +106,7 @@ def parallel_radius(lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True)
     return prime_vertical_radius(phi, earth=earth, degrees=False) * xp.cos(phi)
 
 
+@elementwise()
 def meridian_degree_length(
     lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True
 ) -> Any:
@@ -134,6 +139,7 @@ def meridian_degree_length(
     return meridional_radius(phi, earth=earth, degrees=False) * like(_DEG, lat, xp)
 
 
+@elementwise()
 def parallel_degree_length(
     lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True
 ) -> Any:
@@ -163,6 +169,7 @@ def parallel_degree_length(
     return parallel_radius(phi, earth=earth, degrees=False) * like(_DEG, lat, xp)
 
 
+@elementwise(n_outputs=3)
 def geodetic_to_ecef(
     lon: Any,
     lat: Any,
@@ -215,6 +222,7 @@ def geodetic_to_ecef(
     return x, y, z
 
 
+@elementwise(n_outputs=3)
 def ecef_to_geodetic(
     x: Any,
     y: Any,

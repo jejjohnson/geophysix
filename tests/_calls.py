@@ -18,6 +18,7 @@ from geophysix.constants import CH4
 
 __all__ = [
     "CALLS",
+    "CHANGES_A_DIMENSION",
     "MODULES",
     "TAKES_NO_ARRAYS",
     "Call",
@@ -34,6 +35,9 @@ TAKES_NO_ARRAYS = {
     "seawater.linear_drho_dS",
     "seawater.linear_drho_dT",
 }
+
+# Not elementwise: DataArrays are refused (#59).
+CHANGES_A_DIMENSION = {"earth.cell_area", "thermo.hypsometric_thickness"}
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

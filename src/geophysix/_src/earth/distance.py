@@ -8,12 +8,14 @@ from typing import Any
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src._records import is_concrete
 from geophysix._src.earth.records import SPHERE, Ellipsoid
+from geophysix._src.labelled import elementwise
 from geophysix.exceptions import EarthError
 
 
 _DEG = math.pi / 180.0
 
 
+@elementwise()
 def great_circle_distance(
     lon1: Any,
     lat1: Any,
@@ -94,6 +96,7 @@ def great_circle_distance(
     return radius * xp.atan2(sin_sigma, cos_sigma)
 
 
+@elementwise()
 def initial_azimuth(
     lon1: Any, lat1: Any, lon2: Any, lat2: Any, *, degrees: bool = True
 ) -> Any:

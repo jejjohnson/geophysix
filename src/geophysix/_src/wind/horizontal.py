@@ -6,6 +6,7 @@ import math
 from typing import Any, Literal
 
 from geophysix._src._arrays import floating_inputs, like
+from geophysix._src.labelled import elementwise
 from geophysix.exceptions import GeophysixError
 
 
@@ -21,6 +22,7 @@ def _check_convention(convention: str) -> None:
         raise GeophysixError(msg)
 
 
+@elementwise()
 def wind_speed(u: Any, v: Any) -> Any:
     """The horizontal wind speed.
 
@@ -50,6 +52,7 @@ def wind_speed(u: Any, v: Any) -> Any:
     return xp.where(calm, xp.zeros_like(squared), safe**0.5)
 
 
+@elementwise()
 def wind_direction(
     u: Any, v: Any, *, convention: Convention = "from", degrees: bool = True
 ) -> Any:
@@ -107,6 +110,7 @@ def wind_direction(
     return bearing
 
 
+@elementwise(n_outputs=2)
 def wind_components(
     speed: Any,
     direction: Any,

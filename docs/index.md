@@ -4,7 +4,7 @@
 
 geophysix is the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water: constants, the ellipsoid and the sphere, rotation, thermodynamics, the wind, the sea-water equation of state and column units. It is GeoNumerics tier 0 and imports nothing from the rest of the stack.
 
-The formulas are written in the [Python array API standard](https://data-apis.org/array-api/latest/): NumPy in gives NumPy out, and JAX, torch, CuPy or dask arrays give the same back, on the same device. JAX is never imported at module level, so the same functions run under `jit`, `vmap` and `grad` when you pass JAX arrays and need nothing else installed when you do not.
+The formulas are written in the [Python array API standard](https://data-apis.org/array-api/latest/): NumPy in gives NumPy out, and JAX, torch, CuPy or dask arrays give the same back, on the same device. An xarray DataArray gives a DataArray back, aligned by dimension name. JAX is never imported at module level, so the same functions run under `jit`, `vmap` and `grad` when you pass JAX arrays and need nothing else installed when you do not.
 
 ## Installation
 

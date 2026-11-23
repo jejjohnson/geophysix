@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: uv sync --extra jax --all-groups
+        run: uv sync --all-extras --all-groups
       - name: Run tests with coverage
         run: uv run pytest -v
       - name: Upload coverage report
@@ -38,20 +38,20 @@ jobs:
           fail_ci_if_error: false
 
   test-without-jax:
-    name: geophysix without JAX
+    name: geophysix without JAX and xarray
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
-      - name: Install dependencies (no jax extra)
+      - name: Install dependencies (no extras)
         run: uv sync --group dev --group test
-      - name: Assert that JAX is not installed
+      - name: Assert that JAX and xarray are not installed
         run: >-
           uv run python -c
-          "import importlib.util,sys; sys.exit(importlib.util.find_spec('jax') is not None)"
-      - name: Run tests without JAX
+          "import importlib.util as u, sys; sys.exit(any(map(u.find_spec, ('jax', 'xarray'))))"
+      - name: Run the tests without them
         run: uv run pytest -o addopts= tests
 
   test-torch:
@@ -66,7 +66,7 @@ jobs:
       # its asarray detaches a tensor; 2.13 no longer does.
       - name: Install the package with JAX, the test libraries and CPU torch
         run: |
-          uv sync --extra jax --group dev --group test
+          uv sync --all-extras --group dev --group test
           uv pip install "torch==2.10.*" --index-url https://download.pytorch.org/whl/cpu
       - name: Run every public function on torch
         run: uv run --no-sync pytest -o addopts= tests/test_array_kinds.py

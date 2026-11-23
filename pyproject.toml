@@ -27,6 +27,7 @@ dependencies = [
 
 [project.optional-dependencies]
 jax = ["jax>=0.4.30"]
+xarray = ["xarray>=2024.6"]
 
 [project.urls]
 Repository = "https://github.com/jejjohnson/geophysix"
