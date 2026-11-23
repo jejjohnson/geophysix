@@ -10,11 +10,10 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from _backends import assert_numpy_jax_agree, needs_jax
+from _backends import needs_jax
 from _oracles import ecef_from_geodetic, geod_inverse, wgs84_transformer
 from hypothesis import given, settings, strategies as st
 
-from geophysix._src.backend import array_namespace
 from geophysix.earth import (
     SPHERE,
     WGS84,
@@ -33,16 +32,6 @@ RNG = np.random.default_rng(0)
 LON = RNG.uniform(-180.0, 180.0, 200)
 LAT = RNG.uniform(-90.0, 90.0, 200)
 HEIGHT = RNG.uniform(-1_000.0, 10_000.0, 200)
-
-
-def _stack(fn):
-    """Wrap a three-output function so it returns one stacked array."""
-
-    def wrapped(*args):
-        xp = array_namespace(*args)
-        return xp.stack(fn(*args))
-
-    return wrapped
 
 
 # --- oracle: pyproj ---
@@ -186,31 +175,6 @@ def test_degree_lengths_in_radians() -> None:
 
 
 # --- backends and transforms ---
-
-
-@pytest.mark.parametrize(
-    ("fn", "args"),
-    [
-        (_stack(geodetic_to_ecef), (LON[:8], LAT[:8], HEIGHT[:8])),
-        (prime_vertical_radius, (LAT[:8],)),
-        (meridional_radius, (LAT[:8],)),
-        (parallel_radius, (LAT[:8],)),
-        (meridian_degree_length, (LAT[:8],)),
-        (parallel_degree_length, (LAT[:8],)),
-    ],
-)
-def test_numpy_and_jax_agree(fn, args) -> None:
-    assert_numpy_jax_agree(fn, *(np.asarray(a) for a in args), rtol=1e-12)
-
-
-def test_inverse_numpy_and_jax_agree() -> None:
-    # the angles to 1e-12 relative; h is a difference of two 6.4e6 m terms,
-    # so NumPy and XLA round it differently by about 1e-10 m
-    xyz = [np.asarray(v) for v in ecef_from_geodetic(LON[:8], LAT[:8], HEIGHT[:8])]
-    angles = _stack(lambda x, y, z: ecef_to_geodetic(x, y, z)[:2])
-    assert_numpy_jax_agree(angles, *xyz, rtol=1e-12)
-    height = _stack(lambda x, y, z: ecef_to_geodetic(x, y, z)[2:])
-    assert_numpy_jax_agree(height, *(1.0 * v for v in xyz), rtol=1e-8)
 
 
 @needs_jax

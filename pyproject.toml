@@ -43,6 +43,7 @@ dev = [
 test = [
     # Reference results only: oracles and property tests, never runtime imports.
     "array-api-strict>=2.3",
+    "dask[array]>=2024.6",
     "pyproj>=3.6",
     "gsw>=3.6",
     "hypothesis>=6.100",

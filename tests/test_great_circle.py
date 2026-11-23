@@ -10,7 +10,7 @@ import math
 
 import numpy as np
 import pytest
-from _backends import assert_numpy_jax_agree, needs_jax
+from _backends import needs_jax
 from hypothesis import given, settings, strategies as st
 
 from geophysix.earth import (
@@ -105,11 +105,6 @@ def test_radians() -> None:
 
 
 # --- backends and transforms ---
-
-
-@pytest.mark.parametrize("fn", [great_circle_distance, initial_azimuth])
-def test_numpy_and_jax_agree(fn) -> None:
-    assert_numpy_jax_agree(fn, LON1[:8], LAT1[:8], LON2[:8], LAT2[:8], rtol=1e-12)
 
 
 @needs_jax

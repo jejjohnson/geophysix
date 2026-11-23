@@ -53,3 +53,20 @@ jobs:
           "import importlib.util,sys; sys.exit(importlib.util.find_spec('jax') is not None)"
       - name: Run tests without JAX
         run: uv run pytest -o addopts= tests
+
+  test-torch:
+    name: geophysix on torch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+      # torch is large, so it is in no dependency group. 2.10 is pinned because
+      # its asarray detaches a tensor; 2.13 no longer does.
+      - name: Install the package with JAX, the test libraries and CPU torch
+        run: |
+          uv sync --extra jax --group dev --group test
+          uv pip install "torch==2.10.*" --index-url https://download.pytorch.org/whl/cpu
+      - name: Run every public function on torch
+        run: uv run --no-sync pytest -o addopts= tests/test_array_kinds.py

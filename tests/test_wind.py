@@ -6,10 +6,9 @@ import math
 
 import numpy as np
 import pytest
-from _backends import assert_numpy_jax_agree, needs_jax
+from _backends import needs_jax
 from hypothesis import given, settings, strategies as st
 
-from geophysix._src.backend import array_namespace
 from geophysix.exceptions import GeophysixError
 from geophysix.wind import wind_components, wind_direction, wind_speed
 
@@ -79,23 +78,6 @@ def test_matches_xrops_and_plumax_bit_for_bit() -> None:
 def test_bad_convention(fn) -> None:
     with pytest.raises(GeophysixError, match="convention must be 'from' or 'to'"):
         fn(1.0, 1.0, convention="towards")
-
-
-def _stacked_components(speed, direction):
-    """``wind_components`` as one stacked array, for the parity check."""
-    return array_namespace(speed, direction).stack(wind_components(speed, direction))
-
-
-@pytest.mark.parametrize(
-    ("fn", "args"),
-    [
-        (wind_speed, (U[:8], V[:8])),
-        (wind_direction, (U[:8], V[:8])),
-        (_stacked_components, (np.abs(U[:8]), V[:8] * 40.0)),
-    ],
-)
-def test_numpy_and_jax_agree(fn, args) -> None:
-    assert_numpy_jax_agree(fn, *args, rtol=1e-13)
 
 
 @needs_jax

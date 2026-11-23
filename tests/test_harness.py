@@ -1,7 +1,7 @@
 """Smoke test of the harness: one toy function passes all four checks.
 
 The toy function is f(x) = 2 sin x, written the way every geophysix function
-is: it computes in the namespace of its first array argument. The four checks
+is: it computes in the namespace of its inputs. The four checks
 are the house style's: an oracle, a property, a gradient and backend parity.
 """
 
@@ -9,18 +9,18 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from _backends import HAS_JAX, assert_numpy_jax_agree, needs_jax
+from _backends import HAS_JAX, KINDS, assert_backends_agree, needs_jax
 from _oracles import ecef_from_geodetic, geod_inverse, gsw_module
 from hypothesis import given, strategies as st
 
+from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.backend import array_namespace
 
 
 def toy(x):
     """Return 2 sin x in the namespace of ``x``."""
-    xp = array_namespace(x)
-    two = xp.asarray(2.0, dtype=x.dtype)
-    return two * xp.sin(x)
+    xp, (x,) = floating_inputs(x)
+    return like(2.0, x, xp) * xp.sin(x)
 
 
 def test_oracle_matches_the_closed_form() -> None:
@@ -46,8 +46,42 @@ def test_gradient_matches_central_differences() -> None:
     np.testing.assert_allclose(np.asarray(grad), np.asarray(central), rtol=1e-6)
 
 
-def test_numpy_and_jax_agree() -> None:
-    assert_numpy_jax_agree(toy, np.linspace(-3.0, 3.0, 25))
+def test_every_array_kind_agrees() -> None:
+    assert_backends_agree(toy, np.linspace(-3.0, 3.0, 25))
+
+
+def test_the_check_catches_numpy_coming_back() -> None:
+    def leaves(x):
+        return np.sin(np.asarray(x))
+
+    plain = [kind for kind in KINDS if kind.name == "strict"]
+    with pytest.raises(AssertionError, match="strict in must give strict out"):
+        assert_backends_agree(leaves, np.ones(3), kinds=plain)
+
+
+def test_the_check_catches_a_promoted_float32() -> None:
+    def promotes(x):
+        return np.asarray(x, dtype=np.float64)
+
+    with pytest.raises(AssertionError, match="numpy float32: float64 came back"):
+        assert_backends_agree(promotes, np.ones(3), kinds=KINDS[:1])
+
+
+def test_the_check_catches_a_constant_on_the_default_device() -> None:
+    def misplaces(x):
+        return x * array_namespace(x).asarray(2.0, dtype=x.dtype)
+
+    second = [kind for kind in KINDS if kind.name == "second device"]
+    with pytest.raises(ValueError, match="two different devices"):
+        assert_backends_agree(misplaces, np.ones(3), kinds=second)
+
+
+def test_the_check_catches_a_wrong_value() -> None:
+    def disagrees(x):
+        return x if isinstance(x, np.ndarray) else 2.0 * x
+
+    with pytest.raises(AssertionError, match="strict float64"):
+        assert_backends_agree(disagrees, np.ones(3))
 
 
 def test_has_jax_matches_the_environment() -> None:

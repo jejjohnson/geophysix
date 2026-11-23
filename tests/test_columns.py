@@ -7,7 +7,6 @@ import math
 
 import numpy as np
 import pytest
-from _backends import assert_numpy_jax_agree
 
 from geophysix.columns import (
     COLUMN_UNITS,
@@ -91,18 +90,3 @@ def test_enhancement_to_mixing_ratio() -> None:
     mol = convert(1e-3, "kg_m2", "mol_m2", gas=CH4)
     dx = float(mixing_ratio_from_column(mol, n_dry))
     assert math.isclose(dx, 1e-3 / CH4.molar_mass / float(n_dry), rel_tol=1e-15)
-
-
-def test_numpy_and_jax_agree() -> None:
-    assert_numpy_jax_agree(
-        lambda v: convert(v, "ppm_m", "kg_m2", **AIR), VALUES, rtol=1e-14
-    )
-    assert_numpy_jax_agree(
-        dry_air_column, np.array([9e4, 1e5]), np.array([10.0, 20.0]), rtol=1e-14
-    )
-    assert_numpy_jax_agree(
-        column_from_mixing_ratio, np.array([2e-6]), np.array([3.5e5]), rtol=1e-15
-    )
-    assert_numpy_jax_agree(
-        mixing_ratio_from_column, np.array([0.7]), np.array([3.5e5]), rtol=1e-15
-    )

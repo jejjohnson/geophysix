@@ -61,7 +61,7 @@ Skip anything ruff, ty or the tests already enforce (formatting, import order, `
 
 ### 4. Tests
 
-- Each behaviour is checked against an oracle (pyproj, gsw, CODATA or a hand computation), a `hypothesis` property, a `jit` / `vmap` / `grad` smoke test that skips without JAX, and a NumPy / JAX parity test; the poles, `e = 0` and the float32 dtype have their own tests.
+- Each behaviour is checked against an oracle (pyproj, gsw, CODATA or a hand computation), a `hypothesis` property, a `jit` / `vmap` / `grad` smoke test that skips without JAX, and a `Call` in `tests/_calls.py` (parity over every array kind); the poles, `e = 0` and the float32 dtype have their own tests.
 - New code is covered (the 90 % gate is global, so a well-covered package can hide an untested module: look at the diff, not the total).
 - Randomness, if any, is seeded; a statistical assertion is bounded by the statistic's own sampling distribution, with the bound's source in a comment.
 - Tier markers right: unmarked under ~1 s, `slow` above, `integration` for end-to-end workflows and optional dependencies.

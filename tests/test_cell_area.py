@@ -10,7 +10,7 @@ import math
 
 import numpy as np
 import pytest
-from _backends import assert_numpy_jax_agree, needs_jax
+from _backends import needs_jax
 from hypothesis import given, settings, strategies as st
 
 from geophysix.earth import (
@@ -124,12 +124,6 @@ def test_radians() -> None:
 
 
 # --- backends and transforms ---
-
-
-def test_numpy_and_jax_agree() -> None:
-    assert_numpy_jax_agree(
-        cell_area, np.linspace(-80, 80, 9), np.linspace(0, 40, 6), rtol=1e-12
-    )
 
 
 @needs_jax
