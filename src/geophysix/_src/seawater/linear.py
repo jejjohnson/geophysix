@@ -8,6 +8,7 @@ from typing import Any
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src._records import is_concrete, register_record
 from geophysix._src.constants.records import STANDARD, Constants
+from geophysix._src.labelled import elementwise
 from geophysix.exceptions import GeophysixError
 
 
@@ -58,6 +59,7 @@ register_record(LinearEOS)
 LINEAR_EOS = LinearEOS()
 
 
+@elementwise()
 def linear_density(
     temperature: Any, salinity: Any, *, eos: LinearEOS = LINEAR_EOS
 ) -> Any:
@@ -84,6 +86,7 @@ def linear_density(
     return rho0 * (1.0 - alpha * (t - t0) + beta * (s - s0))
 
 
+@elementwise()
 def linear_density_anomaly(
     temperature: Any, salinity: Any, *, eos: LinearEOS = LINEAR_EOS
 ) -> Any:
@@ -153,6 +156,7 @@ def linear_drho_dS(*, eos: LinearEOS = LINEAR_EOS) -> Any:
     return eos.reference_density * eos.haline_contraction
 
 
+@elementwise()
 def buoyancy(
     density: Any, *, eos: LinearEOS = LINEAR_EOS, constants: Constants = STANDARD
 ) -> Any:
@@ -182,6 +186,7 @@ def buoyancy(
     return -g * (rho - rho0) / rho0
 
 
+@elementwise()
 def reduced_gravity(
     upper_density: Any,
     lower_density: Any,

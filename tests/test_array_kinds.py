@@ -14,7 +14,9 @@ from _backends import (
     needs_torch,
     outputs,
 )
-from _calls import CALLS, MODULES, TAKES_NO_ARRAYS, Call
+from _calls import CALLS, CHANGES_A_DIMENSION, MODULES, TAKES_NO_ARRAYS, Call
+
+from geophysix import BackendError
 
 
 CALL_IDS = [call.name for call in CALLS]
@@ -34,6 +36,10 @@ def test_every_public_function_has_a_call() -> None:
 @pytest.mark.parametrize("kind", KINDS, ids=[kind.name for kind in KINDS])
 @pytest.mark.parametrize("call", CALLS, ids=CALL_IDS)
 def test_the_kind_comes_back(call: Call, kind: ArrayKind) -> None:
+    if kind.name == "xarray" and call.name in CHANGES_A_DIMENSION:
+        with pytest.raises(BackendError, match="DataArray"):
+            call.function(*map(kind.make, call.args))
+        return
     assert_backends_agree(
         call.function,
         *call.args,

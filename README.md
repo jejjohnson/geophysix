@@ -17,7 +17,7 @@ Physical constants, Earth geometry and atmospheric state, on any array library.
 
 geophysix is the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water: constants, the ellipsoid and the sphere, rotation, thermodynamics, the wind, the sea-water equation of state and column units. It is GeoNumerics tier 0 and imports nothing from the rest of the stack.
 
-The formulas are written in the [Python array API standard](https://data-apis.org/array-api/latest/): NumPy in gives NumPy out, and JAX, torch, CuPy or dask arrays give the same back, on the same device. No array library but NumPy is imported unless you pass its arrays.
+The formulas are written in the [Python array API standard](https://data-apis.org/array-api/latest/): NumPy in gives NumPy out, and JAX, torch, CuPy or dask arrays give the same back, on the same device. An xarray DataArray gives a DataArray back, aligned by dimension name. No array library but NumPy is imported unless you pass its arrays.
 
 ## Install
 
@@ -29,7 +29,7 @@ pip install geophysix
 uv add geophysix
 ```
 
-The `jax` extra adds JAX: `pip install "geophysix[jax]"`.
+The `jax` and `xarray` extras add those libraries: `pip install "geophysix[jax,xarray]"`.
 
 ## Status
 

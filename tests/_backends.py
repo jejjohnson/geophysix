@@ -1,7 +1,7 @@
 """The kinds of array a function must accept, and the check that they agree.
 
-JAX, dask and torch are each optional here: a kind whose library is missing is
-left out, so the job without JAX runs the rest. torch is in no dependency
+JAX, xarray, dask and torch are each optional here: a kind whose library is missing is
+left out, so the job without JAX and xarray runs the rest. torch is in no dependency
 group, because it is large; one CI job installs it.
 """
 
@@ -21,20 +21,24 @@ __all__ = [
     "HAS_DASK",
     "HAS_JAX",
     "HAS_TORCH",
+    "HAS_XARRAY",
     "KINDS",
     "ArrayKind",
     "assert_backends_agree",
     "needs_jax",
     "needs_torch",
+    "needs_xarray",
     "outputs",
 ]
 
 HAS_JAX = importlib.util.find_spec("jax") is not None
 HAS_DASK = importlib.util.find_spec("dask") is not None
 HAS_TORCH = importlib.util.find_spec("torch") is not None
+HAS_XARRAY = importlib.util.find_spec("xarray") is not None
 
 needs_jax = pytest.mark.skipif(not HAS_JAX, reason="JAX is not installed")
 needs_torch = pytest.mark.skipif(not HAS_TORCH, reason="torch is not installed")
+needs_xarray = pytest.mark.skipif(not HAS_XARRAY, reason="xarray is not installed")
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -52,6 +56,11 @@ class ArrayKind:
             f"{self.name} in must give {self.name} out, got {type(array).__name__}"
         )
         return self.to_numpy(array)
+
+
+def _dims(array: np.ndarray) -> tuple[str, ...]:
+    """Dimension names from the right, so that arrays broadcast as NumPy does."""
+    return tuple(f"dim{array.ndim - axis}" for axis in range(array.ndim))
 
 
 def _second_device() -> ArrayKind:
@@ -91,6 +100,13 @@ def _kinds() -> list[ArrayKind]:
         kinds.append(
             ArrayKind("torch", torch.tensor, torch.Tensor, lambda t: t.detach().numpy())
         )
+    if HAS_XARRAY:
+        import xarray as xr
+
+        def labelled(array: np.ndarray) -> Any:
+            return xr.DataArray(array, dims=_dims(array))
+
+        kinds.append(ArrayKind("xarray", labelled, xr.DataArray))
     return kinds
 
 

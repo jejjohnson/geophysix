@@ -15,8 +15,10 @@ from hypothesis import given, strategies as st
 
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.backend import array_namespace
+from geophysix._src.labelled import elementwise
 
 
+@elementwise()
 def toy(x):
     """Return 2 sin x in the namespace of ``x``."""
     xp, (x,) = floating_inputs(x)

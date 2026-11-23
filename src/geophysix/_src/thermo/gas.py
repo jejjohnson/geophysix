@@ -8,8 +8,10 @@ from typing import Any
 
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.constants.records import H2O, STANDARD, Constants, Gas
+from geophysix._src.labelled import elementwise
 
 
+@elementwise()
 def number_density(
     pressure: Any, temperature: Any, *, constants: Constants = STANDARD
 ) -> Any:
@@ -42,6 +44,7 @@ def number_density(
     return pressure / (k_b * temperature)
 
 
+@elementwise()
 def dry_air_density(
     pressure: Any, temperature: Any, *, constants: Constants = STANDARD
 ) -> Any:
@@ -75,6 +78,7 @@ def dry_air_density(
     return pressure / (r_d * temperature)
 
 
+@elementwise()
 def virtual_temperature(
     temperature: Any,
     specific_humidity: Any,
@@ -114,6 +118,7 @@ def virtual_temperature(
     return temperature * (1.0 + excess * q)
 
 
+@elementwise()
 def exner(
     pressure: Any,
     *,
@@ -144,6 +149,7 @@ def exner(
     return (pressure / p0) ** kappa
 
 
+@elementwise()
 def potential_temperature(
     temperature: Any,
     pressure: Any,
@@ -180,6 +186,7 @@ def potential_temperature(
     return temperature * (p0 / pressure) ** kappa
 
 
+@elementwise()
 def temperature_from_potential_temperature(
     potential_temperature: Any,
     pressure: Any,
@@ -267,6 +274,7 @@ def hypsometric_thickness(
     return r_d * mean_t_v / g * xp.log(pressure[..., :-1] / pressure[..., 1:])
 
 
+@elementwise()
 def vertical_velocity(
     pressure_velocity: Any,
     pressure: Any,
@@ -309,6 +317,7 @@ def vertical_velocity(
     return -omega / (density * g)
 
 
+@elementwise()
 def pressure_velocity(
     vertical_velocity: Any,
     pressure: Any,

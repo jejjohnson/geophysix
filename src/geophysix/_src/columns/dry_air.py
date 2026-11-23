@@ -6,8 +6,10 @@ from typing import Any
 
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.constants.records import STANDARD, Constants
+from geophysix._src.labelled import elementwise
 
 
+@elementwise()
 def dry_air_column(
     surface_pressure: Any,
     water_vapour_column: Any = 0.0,
@@ -49,6 +51,7 @@ def dry_air_column(
     return (pressure / g - water) / m_dry
 
 
+@elementwise()
 def column_from_mixing_ratio(mixing_ratio: Any, dry_air_column: Any) -> Any:
     """The column of a gas from its dry-air mole fraction.
 
@@ -72,6 +75,7 @@ def column_from_mixing_ratio(mixing_ratio: Any, dry_air_column: Any) -> Any:
     return mixing_ratio * dry_air_column
 
 
+@elementwise()
 def mixing_ratio_from_column(column: Any, dry_air_column: Any) -> Any:
     """The dry-air mole fraction of a gas from its column.
 

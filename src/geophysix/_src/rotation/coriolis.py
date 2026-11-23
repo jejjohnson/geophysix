@@ -7,11 +7,13 @@ from typing import Any
 
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.earth.records import WGS84, Ellipsoid
+from geophysix._src.labelled import elementwise
 
 
 _DEG = math.pi / 180.0
 
 
+@elementwise()
 def coriolis(lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True) -> Any:
     """The Coriolis parameter at each latitude.
 
@@ -41,6 +43,7 @@ def coriolis(lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True) -> Any
     return 2.0 * omega * xp.sin(phi)
 
 
+@elementwise()
 def beta(lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True) -> Any:
     """The meridional gradient of the Coriolis parameter.
 
@@ -78,6 +81,7 @@ def beta(lat: Any, *, earth: Ellipsoid = WGS84, degrees: bool = True) -> Any:
     return 2.0 * omega * xp.cos(phi) / meridional
 
 
+@elementwise()
 def beta_plane(y: Any, *, f0: Any, beta: Any, y0: Any) -> Any:
     """The Coriolis parameter on a β-plane.
 
