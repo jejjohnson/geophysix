@@ -67,7 +67,7 @@ Before writing a helper, a constant, a conversion or a formula, find out whether
 | A linear sea-water density, buoyancy or reduced gravity | `geophysix.seawater` |
 | A column-unit conversion, `p / (k_B T)`, a dry-air column, a molecules-per-area to mixing-ratio conversion | `geophysix.columns.convert`, `geophysix.thermo.number_density`, `geophysix.columns.dry_air_column`, `mixing_ratio_from_column` |
 | `xp = np if isinstance(x, np.ndarray) else jnp`, or `x.astype(float)` on an input | `geophysix._src.backend.array_namespace`, `geophysix._src._arrays.floating_inputs` |
-| `isinstance(x, xr.DataArray)`, or a call to `xr.apply_ufunc` | `@elementwise` and `is_dataarray` from `geophysix._src.labelled` |
+| `isinstance(x, xr.DataArray)`, or a call to `xr.apply_ufunc` | `@elementwise`, `apply_along` for a function that changes the length of a named dimension, and `is_dataarray`, from `geophysix._src.labelled` |
 | A constant as an array of the input's dtype, on its device | `geophysix._src._arrays.like` |
 | A frozen record that must cross `jit` | `geophysix._src._records.register_record` (and `is_concrete` for checks that skip tracers) |
 | A new exception for a bad body, unit or latitude, or for an unknown array library | `EarthError`, `UnitError`, `RangeError`, `BackendError` |
@@ -79,7 +79,7 @@ Everything composes because it keeps these contracts; the tests in "What enforce
 ### 1. Public functions
 
 - **Arrays.** One implementation in functions of the Python array API standard. `xp, (x, y) = floating_inputs(x, y)` opens every function. The namespace comes from the inputs: NumPy in gives NumPy out, JAX in gives JAX out, and the same for every array-API library; Python numbers, sequences and NumPy arrays join the other library. An unknown array, or two other libraries in one call, raise `BackendError`. JAX is never imported at module level.
-- **xarray.** A DataArray in gives a DataArray out, aligned by dimension name; `@elementwise` on the public function does it (`n_outputs=` above one). The result has the dimensions of all the inputs, their coordinates, no name and no attributes. An unlabelled array with dimensions next to a DataArray raises `GeophysixError`. `cell_area` and `hypsometric_thickness` change a dimension's length and refuse DataArrays (#59).
+- **xarray.** A DataArray in gives a DataArray out, aligned by dimension name; `@elementwise` on the public function does it (`n_outputs=` above one). The result has the dimensions of all the inputs, their coordinates, no name and no attributes. An unlabelled array with dimensions next to a DataArray raises `GeophysixError`. `cell_area` (`dims=`) and `hypsometric_thickness` (`dim=`) change a dimension's length, so with DataArrays they need its name; they go through `apply_along`.
 - **dtype and device.** float32 stays float32; integer arrays become the namespace's default float. A constant enters through `like`, in the input's dtype and on its device. An array of the call's library is cast with `astype(copy=False)` and never rebuilt with `asarray`, which detaches a torch tensor in torch 2.5 and 2.10.
 - **SI units everywhere.** Metres, kilograms, seconds, kelvin, pascals. Angles are degrees or radians by an explicit argument, never by guessing from the magnitude.
 - **Records.** Parameters that belong together (an ellipsoid, a gas) are frozen `dataclasses` of floats, passed as keyword arguments with a default (decided in #14).

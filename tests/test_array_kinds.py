@@ -16,7 +16,7 @@ from _backends import (
 )
 from _calls import CALLS, CHANGES_A_DIMENSION, MODULES, TAKES_NO_ARRAYS, Call
 
-from geophysix import BackendError
+from geophysix import GeophysixError
 
 
 CALL_IDS = [call.name for call in CALLS]
@@ -37,7 +37,7 @@ def test_every_public_function_has_a_call() -> None:
 @pytest.mark.parametrize("call", CALLS, ids=CALL_IDS)
 def test_the_kind_comes_back(call: Call, kind: ArrayKind) -> None:
     if kind.name == "xarray" and call.name in CHANGES_A_DIMENSION:
-        with pytest.raises(BackendError, match="DataArray"):
+        with pytest.raises(GeophysixError, match=r"DataArrays need 'dims?'"):
             call.function(*map(kind.make, call.args))
         return
     assert_backends_agree(

@@ -36,7 +36,8 @@ TAKES_NO_ARRAYS = {
     "seawater.linear_drho_dT",
 }
 
-# Not elementwise: DataArrays are refused (#59).
+# Not elementwise: DataArrays need the name of the dimension, see
+# test_dimension_changing.py.
 CHANGES_A_DIMENSION = {"earth.cell_area", "thermo.hypsometric_thickness"}
 
 
