@@ -24,7 +24,7 @@ The diff (`git diff <base>...HEAD`, default base `main`) or the files / commit r
    - a Coriolis parameter or `2 Ω sin φ` → `geophysix.rotation` (planned);
    - an ideal-gas law, `R_d`, `c_p`, a potential temperature or a saturation vapour pressure → `geophysix.thermo` (planned);
    - a sea-water density or freezing point → `geophysix.seawater` (planned);
-   - an array-namespace switch (`np if isinstance(…) else jnp`) → `geophysix._src.backend.array_namespace`;
+   - an array-namespace switch (`np if isinstance(…) else jnp`) → `geophysix._src.backend.array_namespace`, and `floating_inputs` / `like` from `geophysix._src._arrays`;
    - a new exception class for a bad body, unit or latitude → `EarthError`, `UnitError`, `RangeError`;
    - a public name that duplicates another public name for a different object (`tests/test_capabilities.py` will fail on it).
 

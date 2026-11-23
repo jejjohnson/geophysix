@@ -7,7 +7,7 @@ The house style (Python, maths notation, prose, pseudocode, reports) comes from 
 
 ## What this repo is
 
-geophysix is the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water: constants, the ellipsoid and the sphere, rotation, thermodynamics, the wind, the sea-water equation of state and column units. It is GeoNumerics tier 0, written on NumPy with JAX optional.
+geophysix is the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water: constants, the ellipsoid and the sphere, rotation, thermodynamics, the wind, the sea-water equation of state and column units. It is GeoNumerics tier 0, written once in the Python array API standard, so it runs on NumPy, JAX, CuPy, torch, dask and any other array-API library.
 
 People build on a package like this, so **the package is a library of primitives**: new code composes what is here, and anything genuinely new lands where the next person will find and reuse it.
 
@@ -16,7 +16,7 @@ The public API is the set of public modules below; private code lives in `src/ge
 | Module | Owns |
 |---|---|
 | `_typing.py` | The `ArrayLike` type alias |
-| `exceptions.py` | `GeophysixError` (a `ValueError`) and its subclasses `EarthError`, `UnitError`, `RangeError` |
+| `exceptions.py` | `GeophysixError` (a `ValueError`) and its subclasses `BackendError`, `EarthError`, `UnitError`, `RangeError` |
 | `constants` | `Constants` (CODATA 2018, standard gravity, the standard atmosphere, dry air) as `STANDARD`, and `Gas` records (`CH4`, `CO2`, `H2O`, `N2O`, `CO`) |
 | `earth` | The Earth's figure, `Ellipsoid` (`WGS84`, `GRS80`) and `sphere` (`SPHERE`, the IUGG mean radius), and the geometry on it |
 | `rotation` | The Coriolis parameter f, its gradient β and the β-plane |
@@ -28,7 +28,7 @@ The public API is the set of public modules below; private code lives in `src/ge
 ### Boundaries
 
 - **Layer rule.** geophysix is GeoNumerics tier 0 and imports nothing from the GeoStack. It never imports gridax, diagnostix, pipekit, geotoolz or any GeoModels library; they import it.
-- **One runtime dependency**, `numpy>=2.0`. An optional one goes behind an extra and an in-function import that names the extra when it is missing.
+- **Two runtime dependencies**: `numpy>=2.0` and `array-api-compat` (decided in #55). JAX is an extra, and any other optional one goes behind an extra and an in-function import that names the extra when it is missing.
 - **Ownership test.** A closed-form fact about the Earth, its air or its sea water, evaluated at a point, belongs here. Anything on a grid or a field belongs above (gridax, diagnostix).
 
 When other projects build on the package, list them here and keep their imports working: a rename or removal of a public name goes through a deprecation (the old name keeps working with a `DeprecationWarning` that names the replacement for at least one release).
@@ -39,10 +39,11 @@ Each foundation brings a rule. Breaking one runs fine on your machine and fails 
 
 | Foundation | The package uses it for | The rule it brings |
 |---|---|---|
-| **NumPy ≥ 2.0** | The only runtime dependency; every function runs on it | NumPy in gives NumPy out; no function needs anything else installed. |
-| **JAX** (optional extra `jax`) | The same functions under `jit`, `vmap` and `grad` | Never imported at module level. A function computes in the namespace of its first array argument, so JAX is used only when the caller passes JAX arrays. |
+| **NumPy ≥ 2.0** | The default namespace; every function runs on it | NumPy in gives NumPy out; no function needs JAX installed. |
+| **array-api-compat** | Finding the namespace and the device of an input | Only functions of the array API standard are called on it; `array_api_strict` in the tests refuses the rest. |
+| **JAX** (optional extra `jax`) | The same functions under `jit`, `vmap` and `grad` | Never imported at module level; used only when the caller passes JAX arrays, or a record that holds one. |
 | **`dataclasses`** | Records such as an ellipsoid | `frozen=True`, `slots=True`, floats only, passed as keyword arguments with defaults. |
-| **pyproj, gsw, hypothesis** (the `test` group) | Reference results and property tests | Never a runtime import; an oracle test skips when its package is missing. |
+| **pyproj, gsw, hypothesis, array-api-strict** (the `test` group) | Reference results and property tests | Never a runtime import; an oracle test skips when its package is missing. |
 | **pytest + `--doctest-modules`** | The suite and every docstring `Examples:` block | An example's expected output is what the code prints; a stale example is a failing test. |
 
 ## Reuse before you write
@@ -64,9 +65,10 @@ Before writing a helper, a constant, a conversion or a formula, find out whether
 | A wind speed, a meteorological wind direction, or u and v from them | `geophysix.wind` |
 | A linear sea-water density, buoyancy or reduced gravity | `geophysix.seawater` |
 | A column-unit conversion, `p / (k_B T)`, a dry-air column, a molecules-per-area to mixing-ratio conversion | `geophysix.columns.convert`, `geophysix.thermo.number_density`, `geophysix.columns.dry_air_column`, `mixing_ratio_from_column` |
-| `xp = np if isinstance(x, np.ndarray) else jnp` | `geophysix._src.backend.array_namespace` |
+| `xp = np if isinstance(x, np.ndarray) else jnp`, or `x.astype(float)` on an input | `geophysix._src.backend.array_namespace`, `geophysix._src._arrays.floating_inputs` |
+| A constant as an array of the input's dtype, on its device | `geophysix._src._arrays.like` |
 | A frozen record that must cross `jit` | `geophysix._src._records.register_record` (and `is_concrete` for checks that skip tracers) |
-| A new exception for a bad body, unit or latitude | `EarthError`, `UnitError`, `RangeError` |
+| A new exception for a bad body, unit or latitude, or for an unknown array library | `EarthError`, `UnitError`, `RangeError`, `BackendError` |
 
 ## The contracts
 
@@ -74,8 +76,8 @@ Everything composes because it keeps these contracts; the tests in "What enforce
 
 ### 1. Public functions
 
-- **Array namespace.** A function computes in the namespace of its first array argument, found by the private `geophysix._src.backend.array_namespace`: NumPy in gives NumPy out, a JAX array gives a JAX array, a Python float gives NumPy. JAX is never imported at module level.
-- **Constants take the input's dtype.** A constant enters as `xp.asarray(c, dtype=x.dtype)`, so a float32 input stays float32 and is never promoted.
+- **Arrays.** One implementation in functions of the Python array API standard. `xp, (x, y) = floating_inputs(x, y)` opens every function. The namespace comes from the inputs: NumPy in gives NumPy out, JAX in gives JAX out, and the same for every array-API library; Python numbers, sequences and NumPy arrays join the other library. An unknown array, or two other libraries in one call, raise `BackendError`. JAX is never imported at module level.
+- **dtype and device.** float32 stays float32; integer arrays become the namespace's default float. A constant enters through `like`, in the input's dtype and on its device. An array of the call's library is cast with `astype(copy=False)` and never rebuilt with `asarray`, which detaches a torch tensor in torch 2.5 and 2.10.
 - **SI units everywhere.** Metres, kilograms, seconds, kelvin, pascals. Angles are degrees or radians by an explicit argument, never by guessing from the magnitude.
 - **Records.** Parameters that belong together (an ellipsoid, a gas) are frozen `dataclasses` of floats, passed as keyword arguments with a default (decided in #14).
 - **Honest limits.** The poles, `e = 0` (the sphere) and other degenerate points return the correct limit, not `nan`; a gradient through a branch uses the double-`where` pattern so that it is finite.
@@ -84,7 +86,7 @@ Everything composes because it keeps these contracts; the tests in "What enforce
 
 ### 2. Exceptions
 
-- Every error derives from `GeophysixError`, which is a `ValueError`: `EarthError` (a bad body), `UnitError` (an unknown unit), `RangeError` (a latitude out of range). A new error goes into `exceptions.py`, is exported, and joins the list in `tests/test_exceptions.py`.
+- Every error derives from `GeophysixError`, which is a `ValueError`: `BackendError` (an array of an unknown library, or of several in one call), `EarthError` (a bad body), `UnitError` (an unknown unit), `RangeError` (a latitude out of range). A new error goes into `exceptions.py`, is exported, and joins the list in `tests/test_exceptions.py`.
 
 ### The public API
 

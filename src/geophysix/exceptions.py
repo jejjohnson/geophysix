@@ -13,6 +13,7 @@ from __future__ import annotations
 
 
 __all__ = [
+    "BackendError",
     "EarthError",
     "GeophysixError",
     "RangeError",
@@ -30,6 +31,10 @@ class GeophysixError(ValueError):
         >>> issubclass(GeophysixError, ValueError)
         True
     """
+
+
+class BackendError(GeophysixError):
+    """Raised for an array of an unknown library, or of several in one call."""
 
 
 class EarthError(GeophysixError):

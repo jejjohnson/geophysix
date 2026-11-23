@@ -1,7 +1,7 @@
 [project]
 name = "geophysix"
 version = "0.0.4"
-description = "Physical constants, Earth geometry and atmospheric state, on NumPy with JAX optional."
+description = "Physical constants, Earth geometry and atmospheric state, on any array library."
 authors = [
     {name="J. Emmanuel Johnson", email="jemanjohnson34@gmail.com"},
 ]
@@ -19,7 +19,11 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Development Status :: 2 - Pre-Alpha",
 ]
-dependencies = ["numpy>=2.0"]
+dependencies = [
+    "numpy>=2.0",
+    # the namespace of an input array; pure Python, no dependencies of its own
+    "array-api-compat>=1.11",
+]
 
 [project.optional-dependencies]
 jax = ["jax>=0.4.30"]
@@ -38,6 +42,7 @@ dev = [
 ]
 test = [
     # Reference results only: oracles and property tests, never runtime imports.
+    "array-api-strict>=2.3",
     "pyproj>=3.6",
     "gsw>=3.6",
     "hypothesis>=6.100",

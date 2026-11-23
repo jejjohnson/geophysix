@@ -7,7 +7,7 @@ The essentials, in case you only read this file:
 - One package, `src/geophysix/`: the GeoStack's library of closed-form physical facts about the Earth, its air and its sea water. It is GeoNumerics tier 0 and imports nothing from the GeoStack (never gridax, diagnostix, pipekit, geotoolz or a model). Planned public modules: `constants`, `earth`, `rotation`, `thermo`, `seawater`, `columns`; private code in `_src/<module>/`. Search [`docs/api/capabilities.md`](../docs/api/capabilities.md) before writing a helper.
 - Ownership test: a closed-form fact at a point belongs here; anything on a grid or a field belongs above.
 - Keep the contracts in `AGENTS.md`:
-  - **array rules**: NumPy in gives NumPy out; JAX is never imported at module level; a function computes in the namespace of its first array argument via `geophysix._src.backend.array_namespace`; constants enter in the input's dtype (`xp.asarray(c, dtype=x.dtype)`), never promoting float32;
+  - **array rules**: NumPy in gives NumPy out; JAX is never imported at module level; a function opens with `floating_inputs` (`geophysix._src._arrays`) and calls only functions of the array API standard; an unknown array raises `BackendError`; constants enter through `like`, in the input's dtype and on its device, never promoting float32;
   - **records** are frozen dataclasses of floats passed as keyword arguments with defaults;
   - **units** are SI, and degrees versus radians is an explicit argument;
   - every exception derives from `GeophysixError`, which is a `ValueError`.
