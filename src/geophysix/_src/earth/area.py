@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import functools
 import math
+from collections.abc import Mapping
 from typing import Any
 
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.earth.records import WGS84, Ellipsoid
+from geophysix._src.labelled import apply_along, is_dataarray
+from geophysix.exceptions import GeophysixError
 
 
 _DEG = math.pi / 180.0
@@ -37,6 +41,7 @@ def cell_area(
     lat_edges: Any,
     lon_edges: Any,
     *,
+    dims: tuple[str, str] | None = None,
     earth: Ellipsoid = WGS84,
     degrees: bool = True,
 ) -> Any:
@@ -56,11 +61,20 @@ def cell_area(
         lat_edges: The Ny + 1 latitude edges φ, degrees (radians with
             ``degrees=False``), monotonic.
         lon_edges: The Nx + 1 longitude edges λ, monotonic.
+        dims: The names of the result's latitude and longitude dimensions;
+            needed with DataArrays, and only there. An edge dimension has one
+            entry more than the cells, so its name is not reused.
         earth: The body; WGS84 by default.
         degrees: Whether the edges are in degrees.
 
     Returns:
         The areas, m², of shape (Ny, Nx), in the edges' namespace and dtype.
+        With DataArrays a DataArray on ``dims``.
+
+    Raises:
+        GeophysixError: If DataArrays come without ``dims``, or ``dims``
+            without DataArrays; if the edges are not two 1-D DataArrays with
+            different dimensions.
 
     References:
         Snyder, J. P. (1987), Map Projections: A Working Manual, USGS
@@ -78,6 +92,12 @@ def cell_area(
         >>> math.isclose(float(area.sum()), 4.0 * math.pi, rel_tol=1e-12)
         True
     """
+    edges = {"lat_edges": lat_edges, "lon_edges": lon_edges}
+    if any(map(is_dataarray, edges.values())):
+        return _labelled_cell_area(edges, dims, earth=earth, degrees=degrees)
+    if dims is not None:
+        msg = f"dims={dims!r} names dimensions of DataArrays; plain arrays have none"
+        raise GeophysixError(msg)
     xp, (lat_edges, lon_edges) = floating_inputs(
         lat_edges, lon_edges, params=(earth.semi_major, earth.flattening)
     )
@@ -92,3 +112,31 @@ def cell_area(
     dlam = xp.abs(lam[1:] - lam[:-1])
     # Aᵢⱼ = (b² / 2) Δqᵢ Δλⱼ
     return 0.5 * b**2 * dq[:, None] * dlam[None, :]
+
+
+def _labelled_cell_area(
+    edges: Mapping[str, Any], dims: tuple[str, str] | None, **options: Any
+) -> Any:
+    """`cell_area` of two 1-D DataArrays, on the dimensions ``dims``."""
+    if dims is None or isinstance(dims, str) or len(set(dims)) != 2:
+        msg = (
+            "DataArrays need 'dims', two different names for the result's "
+            f"latitude and longitude, got {dims!r}"
+        )
+        raise GeophysixError(msg)
+    core_dims = {}
+    for name, value in edges.items():
+        if is_dataarray(value):
+            if value.ndim != 1:
+                msg = f"'{name}' must have one dimension, got {value.dims}"
+                raise GeophysixError(msg)
+            core_dims[name] = value.dims
+    if len(set(core_dims.values())) < len(core_dims):
+        msg = f"the edges share the dimension {core_dims['lat_edges'][0]!r}"
+        raise GeophysixError(msg)
+    return apply_along(
+        functools.partial(cell_area, **options),
+        edges,
+        {name: core_dims.get(name, ()) for name in edges},
+        output_dims=tuple(dims),
+    )

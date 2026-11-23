@@ -4,11 +4,13 @@ the hydrostatic conversion between pressure and vertical velocity."""
 
 from __future__ import annotations
 
+import functools
 from typing import Any
 
 from geophysix._src._arrays import floating_inputs, like
 from geophysix._src.constants.records import H2O, STANDARD, Constants, Gas
-from geophysix._src.labelled import elementwise
+from geophysix._src.labelled import apply_along, elementwise, is_dataarray
+from geophysix.exceptions import GeophysixError
 
 
 @elementwise()
@@ -232,23 +234,36 @@ def temperature_from_potential_temperature(
 
 
 def hypsometric_thickness(
-    pressure: Any, virtual_temperature: Any, *, constants: Constants = STANDARD
+    pressure: Any,
+    virtual_temperature: Any,
+    *,
+    dim: str | None = None,
+    constants: Constants = STANDARD,
 ) -> Any:
     """The thickness of each layer between consecutive pressure levels.
 
     Δz_k = (R_d T̄_v / g₀) ln(p_k / p_{k+1}),  T̄_v = (T_v,k + T_v,k+1) / 2
 
-    along the last axis. A layer is thicker where its air is warmer. The
+    along the last axis, or along ``dim`` of DataArrays. A layer is thicker
+    where its air is warmer. The
     thickness is positive when pressure decreases along the axis (the
     surface first); heights are its cumulative sum from the surface.
 
     Args:
         pressure: Pressure p at the N levels, Pa, along the last axis.
         virtual_temperature: Virtual temperature T_v at the same levels, K.
+        dim: The dimension of the levels; needed with DataArrays, and only
+            there.
         constants: The constants record, for R_d and g₀; ``STANDARD`` by default.
 
     Returns:
-        Δz, m, with N − 1 entries along the last axis.
+        Δz, m, with N − 1 entries along the last axis. With DataArrays the
+        dimension ``dim`` comes last, without its coordinate, which has N.
+
+    Raises:
+        GeophysixError: If DataArrays come without ``dim``, or ``dim`` without
+            DataArrays; if one of the inputs is not a DataArray, or lacks
+            ``dim``.
 
     Examples:
         >>> import numpy as np
@@ -263,6 +278,20 @@ def hypsometric_thickness(
         >>> bool(np.allclose(dz, scale * np.log(2.0)))
         True
     """
+    levels = {"pressure": pressure, "virtual_temperature": virtual_temperature}
+    if any(map(is_dataarray, levels.values())):
+        if dim is None:
+            msg = "DataArrays need 'dim', the name of the dimension of the levels"
+            raise GeophysixError(msg)
+        return apply_along(
+            functools.partial(hypsometric_thickness, constants=constants),
+            levels,
+            dict.fromkeys(levels, (dim,)),
+            output_dims=(dim,),
+        )
+    if dim is not None:
+        msg = f"dim={dim!r} names a dimension of DataArrays; plain arrays have none"
+        raise GeophysixError(msg)
     xp, (pressure, t_v) = floating_inputs(
         pressure, virtual_temperature, params=(constants.standard_gravity,)
     )
