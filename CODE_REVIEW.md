@@ -43,13 +43,13 @@ Skip anything ruff, ty or the tests already enforce (formatting, import order, `
 
 ### 2. The contracts
 
-- **Array namespace.** A function computes in the namespace of its first array argument (`geophysix._src.backend.array_namespace`); NumPy in gives NumPy out; JAX is never imported at module level.
+- **Array namespace.** A function opens with `floating_inputs` (`geophysix._src._arrays`) and calls only functions of the array API standard; NumPy in gives NumPy out, and the same for every array-API library; an unknown array raises `BackendError`; JAX is never imported at module level.
 - **Constants** enter in the input's dtype (`xp.asarray(c, dtype=x.dtype)`); float32 in gives float32 out.
 - **Units.** SI everywhere; degrees versus radians by an explicit argument, never by the magnitude of the input.
 - **Records** are frozen dataclasses of floats, passed as keyword arguments with defaults.
 - **Limits.** The poles and `e = 0` return the correct limit, not `nan`; a gradient through a branch uses the double `where`.
 - **Pure.** Return a new array and never mutate the input.
-- **Exceptions** derive from `GeophysixError` (a `ValueError`): `EarthError`, `UnitError`, `RangeError`; errors are chained (`raise … from err`).
+- **Exceptions** derive from `GeophysixError` (a `ValueError`): `BackendError`, `EarthError`, `UnitError`, `RangeError`; errors are chained (`raise … from err`).
 
 ### 3. Public API and documentation
 

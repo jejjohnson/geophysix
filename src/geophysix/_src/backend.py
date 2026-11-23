@@ -1,87 +1,130 @@
-"""Array-namespace dispatch for the NumPy and JAX backends.
+"""Array dispatch: the namespace, and the device, that a call computes on.
 
-A function computes in the namespace of its first array argument: NumPy in
-gives NumPy out, a JAX array gives a JAX array. JAX is never imported at
-module level; it is looked up only when a value that came from JAX is seen.
+A function computes in the namespace of its inputs: NumPy in gives NumPy out,
+JAX in gives JAX out, and the same for every array-API library that
+`array_api_compat` knows. Only functions of the array API standard are called
+on a namespace. No array library but NumPy is imported here.
 """
 
 from __future__ import annotations
 
-import importlib
 from types import ModuleType
 from typing import Any
 
+import array_api_compat
+import array_api_compat.numpy as numpy_namespace
 import numpy as np
 
-
-try:
-    _compat: Any = importlib.import_module("array_api_compat")
-except ImportError:
-    _compat = None
+from geophysix.exceptions import BackendError
 
 
 __all__ = [
     "array_namespace",
-    "is_jax",
+    "device_of",
+    "is_host",
+    "place",
 ]
 
-# Values that always resolve to NumPy: Python scalars, None and NumPy objects.
-_NUMPY_TYPES = (bool, int, float, complex, np.ndarray, np.generic)
+# Values that live on the host and join whatever library the others are from.
+_HOST_TYPES = (bool, int, float, complex, np.ndarray, np.generic, list, tuple)
+
+
+def is_host(value: Any) -> bool:
+    """Say whether a value is ``None``, a Python number, a sequence or NumPy's.
+
+    Examples:
+        >>> is_host(1.0), is_host(None), is_host([1.0, 2.0])
+        (True, True, True)
+        >>> is_host(object())
+        False
+    """
+    return value is None or isinstance(value, _HOST_TYPES)
 
 
 def array_namespace(*values: Any) -> ModuleType:
-    """Return the array namespace that a computation on ``values`` runs in.
+    """The array namespace that a computation on ``values`` runs in.
 
-    Python scalars, ``None`` and NumPy arrays resolve to NumPy. When
-    ``array_api_compat`` is importable, it decides for every other array.
-    Otherwise the first value with an ``__array_namespace__`` method whose
-    namespace is not NumPy's wins, and a JAX array or tracer resolves to
-    ``jax.numpy`` even if it lacks that method.
+    Python numbers, ``None``, sequences and NumPy arrays join the library of
+    the other arrays; on their own they resolve to NumPy.
 
     Args:
-        *values: Arguments of the function being dispatched; any mix of
-            arrays, Python scalars and ``None``.
+        *values: Arguments of the function being dispatched.
 
     Returns:
-        The array namespace, such as ``numpy`` or ``jax.numpy``.
+        The namespace, such as ``array_api_compat.numpy`` or ``jax.numpy``.
+
+    Raises:
+        BackendError: If a value is not an array of a known library, or if two
+            libraries other than NumPy meet in one call.
 
     Examples:
         >>> import numpy as np
-        >>> array_namespace(1.0, None) is np
-        True
-        >>> array_namespace(np.zeros(3), 2.0) is np
-        True
+        >>> array_namespace(np.zeros(3), 2.0, None).__name__
+        'array_api_compat.numpy'
+        >>> array_namespace("text")  # doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        geophysix.exceptions.BackendError: str is not an array of a known library
     """
+    found: dict[str, ModuleType] = {}
     for value in values:
-        if value is None or isinstance(value, _NUMPY_TYPES):
+        if is_host(value):
             continue
-        if _compat is not None:
-            try:
-                return _compat.array_namespace(value)
-            except TypeError:
-                continue
-        get_namespace = getattr(value, "__array_namespace__", None)
-        if get_namespace is not None:
-            namespace = get_namespace()
-            if namespace is not np:
-                return namespace
-        elif type(value).__module__.split(".")[0] in ("jax", "jaxlib"):
-            return importlib.import_module("jax.numpy")
-    return np
+        try:
+            namespace = array_api_compat.array_namespace(value)
+        except TypeError as err:
+            msg = f"{type(value).__name__} is not an array of a known library"
+            raise BackendError(msg) from err
+        found[namespace.__name__] = namespace
+    if len(found) > 1:
+        msg = f"arrays of several libraries in one call: {', '.join(sorted(found))}"
+        raise BackendError(msg)
+    return next(iter(found.values()), numpy_namespace)
 
 
-def is_jax(xp: ModuleType) -> bool:
-    """Say whether an array namespace is JAX's.
+def device_of(value: Any, xp: ModuleType) -> Any:
+    """The device that new arrays join ``value`` on, or ``None`` for the default.
+
+    A JAX tracer has no device, and an uncommitted JAX scalar joins an array
+    on any device, so JAX is left to place its own arrays.
 
     Args:
-        xp: An array namespace, as returned by `array_namespace`.
+        value: An array, or a value on the host.
+        xp: The namespace of the call.
 
     Returns:
-        ``True`` for ``jax.numpy`` and its submodules, ``False`` otherwise.
+        The array's device; ``None`` for a host value and in JAX.
 
     Examples:
         >>> import numpy as np
-        >>> is_jax(np)
-        False
+        >>> device_of(np.zeros(2), np) is None
+        True
     """
-    return xp.__name__.split(".")[0] == "jax"
+    if is_host(value) or array_api_compat.is_jax_namespace(xp):
+        return None
+    return array_api_compat.device(value)
+
+
+def place(value: Any, xp: ModuleType, dtype: Any, device: Any) -> Any:
+    """``value`` as an array of ``dtype``: cast if it is one already, else built.
+
+    Args:
+        value: An array of the namespace ``xp``, or a value on the host.
+        xp: The namespace of the call.
+        dtype: The dtype of the result.
+        device: Where a host value goes, from `device_of`. An array stays on
+            its own device.
+
+    Returns:
+        The array; ``value`` itself if nothing changes.
+
+    Examples:
+        >>> import numpy as np
+        >>> place(0.1, np, np.float32, None).dtype
+        dtype('float32')
+    """
+    if not is_host(value):
+        # asarray would detach a torch tensor from its graph (torch 2.5, 2.10)
+        return xp.astype(value, dtype, copy=False)
+    if device is None:
+        return xp.asarray(value, dtype=dtype)
+    return xp.asarray(value, dtype=dtype, device=device)

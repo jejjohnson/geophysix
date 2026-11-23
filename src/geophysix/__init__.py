@@ -1,4 +1,4 @@
-"""Physical constants, Earth geometry and atmospheric state, on NumPy with JAX optional.
+"""Physical constants, Earth geometry and atmospheric state, on any array library.
 
 ``geophysix`` is the stack's library of closed-form physical facts about the
 Earth, its air and its sea water. It sits at tier 0 of GeoNumerics and imports
@@ -22,6 +22,7 @@ Every module exists; TEOS-10 waits on #34.
 from __future__ import annotations
 
 from geophysix.exceptions import (
+    BackendError,
     EarthError,
     GeophysixError,
     RangeError,
@@ -32,6 +33,7 @@ from geophysix.exceptions import (
 __version__ = "0.0.4"
 
 __all__ = [
+    "BackendError",
     "EarthError",
     "GeophysixError",
     "RangeError",

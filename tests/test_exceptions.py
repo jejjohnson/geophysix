@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import pytest
 
-from geophysix import EarthError, GeophysixError, RangeError, UnitError
+from geophysix import BackendError, EarthError, GeophysixError, RangeError, UnitError
 
 
-SUBCLASSES = [EarthError, UnitError, RangeError]
+SUBCLASSES = [BackendError, EarthError, UnitError, RangeError]
 
 
 @pytest.mark.parametrize("error", SUBCLASSES)

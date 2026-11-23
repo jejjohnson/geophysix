@@ -16,8 +16,8 @@ project:
   id: geophysix-docs
   title: geophysix
   description: >-
-    Physical constants, Earth geometry and atmospheric state, on NumPy with
-    JAX optional.
+    Physical constants, Earth geometry and atmospheric state, on any array
+    library.
   github: https://github.com/jejjohnson/geophysix
   authors:
     - name: J. Emmanuel Johnson
