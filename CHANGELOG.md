@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.5](https://github.com/jejjohnson/geophysix/compare/v0.0.4...v0.0.5) (2026-11-23)
+
+
+### Features
+
+* **backend:** a DataArray in gives a DataArray out, aligned by dimension name ([#62](https://github.com/jejjohnson/geophysix/issues/62)) ([3d28b92](https://github.com/jejjohnson/geophysix/commit/3d28b92b59ebc2027b7aca67926ac37ed1fdf3ef)), closes [#58](https://github.com/jejjohnson/geophysix/issues/58)
+* **backend:** an array keeps its library, device and gradient, and an unknown one raises ([#60](https://github.com/jejjohnson/geophysix/issues/60)) ([2ea1d05](https://github.com/jejjohnson/geophysix/commit/2ea1d05f4a9617d241c73f77b3f293f0e9857f31)), closes [#56](https://github.com/jejjohnson/geophysix/issues/56)
+* **earth,thermo:** cell_area and hypsometric_thickness take and return DataArrays ([#63](https://github.com/jejjohnson/geophysix/issues/63)) ([97a1439](https://github.com/jejjohnson/geophysix/commit/97a14397d239b15ca8d481473120cddab67602ec)), closes [#59](https://github.com/jejjohnson/geophysix/issues/59)
+
 ## [0.0.4](https://github.com/jejjohnson/geophysix/compare/v0.0.3...v0.0.4) (2026-11-21)
 
 
