@@ -1,6 +1,6 @@
 ---
 name: add-physical-function
-description: Add a physical function to a public module of the package — where it goes in _src/<module>/, its record argument with a default, a Google-style docstring, the oracle test, a jit / vmap / grad smoke test that skips without JAX, the NumPy / JAX parity test, the API page and the capability index. Use when asked to add, port or implement a constant, a formula, a conversion or a new module in src/geophysix.
+description: Add a physical function to a public module of the package — where it goes in _src/<module>/, its record argument with a default, a Google-style docstring, the oracle test, a jit / vmap / grad smoke test that skips without JAX, the parity call, the API page and the capability index. Use when asked to add, port or implement a constant, a formula, a conversion or a new module in src/geophysix.
 ---
 
 # Add a physical function
@@ -39,7 +39,7 @@ In `tests/test_<module>.py`, one class per function:
 - **Oracle.** Against pyproj, gsw or a CODATA value, through the helpers in `tests/_oracles.py`, with the tolerance and its source in a comment; skips when the oracle package is missing.
 - **Property.** A `hypothesis` property (symmetry, monotonicity, a round trip, a limit).
 - **Transforms smoke test.** `jit`, `vmap` and `grad` run and give finite results; skips without JAX (`needs_jax` in `tests/_backends.py`).
-- **Parity.** `assert_numpy_jax_agree(fn, *args, rtol=...)` in `tests/_backends.py`: NumPy in gives NumPy out, float32 in gives float32 out, NumPy and `jit`-ed JAX agree.
+- **Parity.** A `Call` in `tests/_calls.py`, with its tolerances: `tests/test_array_kinds.py` runs it on every array kind and fails when a public function has none. A loose tolerance says why in a comment.
 - The poles, `e = 0` and each invalid argument (`RangeError`, `UnitError` with `match=`).
 
 ## 6. Verify

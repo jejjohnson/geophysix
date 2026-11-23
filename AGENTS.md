@@ -43,7 +43,7 @@ Each foundation brings a rule. Breaking one runs fine on your machine and fails 
 | **array-api-compat** | Finding the namespace and the device of an input | Only functions of the array API standard are called on it; `array_api_strict` in the tests refuses the rest. |
 | **JAX** (optional extra `jax`) | The same functions under `jit`, `vmap` and `grad` | Never imported at module level; used only when the caller passes JAX arrays, or a record that holds one. |
 | **`dataclasses`** | Records such as an ellipsoid | `frozen=True`, `slots=True`, floats only, passed as keyword arguments with defaults. |
-| **pyproj, gsw, hypothesis, array-api-strict** (the `test` group) | Reference results and property tests | Never a runtime import; an oracle test skips when its package is missing. |
+| **pyproj, gsw, hypothesis, array-api-strict, dask** (the `test` group) | Reference results and property tests | Never a runtime import; an oracle test skips when its package is missing. |
 | **pytest + `--doctest-modules`** | The suite and every docstring `Examples:` block | An example's expected output is what the code prints; a stale example is a failing test. |
 
 ## Reuse before you write
@@ -103,6 +103,8 @@ Most rules here are tests, so CI tells you when one breaks. Read a test's docstr
 |---|---|
 | `tests/test_public_api.py` | `__all__` sorted, unique and importable; `SUBMODULES` is exactly the set of modules; every submodule declares a sorted `__all__`; the `py.typed` marker ships; `__version__` is dotted |
 | `tests/test_capabilities.py` | `docs/api/capabilities.md` is current; no name is bound to two different objects |
+| `tests/test_array_kinds.py` | Every public function that takes arrays has a `Call` in `tests/_calls.py`; NumPy, `array_api_strict` on two devices, JAX (eager and `jit`), dask and torch each give their own kind, dtype and device back and agree with NumPy; torch gradients equal JAX's |
+| CI job "geophysix on torch" | The same on CPU torch 2.10, which the other jobs do not install |
 | `--doctest-modules` on `src/geophysix` (`addopts`) | Every docstring `Examples:` block runs and prints what it says |
 | `tests/test_exceptions.py` | The hierarchy: every error is a `GeophysixError`, which is a `ValueError` |
 | `tests/test_build_docs.py` | The two-tool docs pipeline: inventory parsing, anchor repair, link checking, the inventory port and the absolute nav URL in `docs/myst.yml`, the files copied to the site root (`ROOT_FILES`) |
@@ -111,7 +113,7 @@ Most rules here are tests, so CI tells you when one breaks. Read a test's docstr
 | `strict_markers = true` | Only the registered tier markers (`slow`, `integration`) exist |
 | ruff (`select = E, F, I, UP, B, SIM, RUF`), ty | Lint (the whole repo), format, types on `src/geophysix` and `scripts` |
 
-Each physical function adds its own tests as `add-physical-function` lays out: an oracle test, a property test, a `jit` / `vmap` / `grad` smoke test that skips without JAX, and a NumPy / JAX parity test.
+Each physical function adds its own tests as `add-physical-function` lays out: an oracle test, a property test, a `jit` / `vmap` / `grad` smoke test that skips without JAX, and a `Call` in `tests/_calls.py`, which runs the function on every array kind.
 
 ## Recipes
 

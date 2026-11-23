@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from _backends import assert_numpy_jax_agree, needs_jax
+from _backends import needs_jax
 
 from geophysix.constants import Constants
 from geophysix.exceptions import GeophysixError
@@ -90,13 +90,6 @@ def test_buoyancy_and_reduced_gravity_follow_the_records() -> None:
 def test_invalid_eos_raises(kwargs) -> None:
     with pytest.raises(GeophysixError):
         LinearEOS(**kwargs)
-
-
-def test_numpy_and_jax_agree() -> None:
-    assert_numpy_jax_agree(linear_density, T, S, rtol=1e-15)
-    assert_numpy_jax_agree(linear_density_anomaly, T, S, rtol=1e-13)
-    assert_numpy_jax_agree(buoyancy, RHO, rtol=1e-12)
-    assert_numpy_jax_agree(reduced_gravity, RHO[:-1], RHO[1:], rtol=1e-12)
 
 
 @needs_jax

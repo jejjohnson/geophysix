@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from _backends import assert_numpy_jax_agree, needs_jax
+from _backends import needs_jax
 from hypothesis import given, strategies as st
 
 from geophysix.earth import WGS84, meridional_radius, sphere
@@ -73,14 +73,6 @@ def test_radians() -> None:
     )
     np.testing.assert_allclose(
         beta(np.deg2rad(LAT), degrees=False), beta(LAT), rtol=1e-15
-    )
-
-
-def test_numpy_and_jax_agree() -> None:
-    assert_numpy_jax_agree(coriolis, LAT, rtol=1e-14)
-    assert_numpy_jax_agree(beta, LAT, rtol=1e-14)
-    assert_numpy_jax_agree(
-        lambda y: beta_plane(y, f0=1e-4, beta=2e-11, y0=0.0), LAT * 1e4, rtol=1e-14
     )
 
 

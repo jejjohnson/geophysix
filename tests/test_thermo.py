@@ -5,8 +5,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
-import pytest
-from _backends import assert_numpy_jax_agree, needs_jax
+from _backends import needs_jax
 
 from geophysix.constants import H2O, STANDARD, Constants
 from geophysix.thermo import (
@@ -33,12 +32,6 @@ def test_scales_with_pressure_and_inverse_temperature() -> None:
     n = number_density(np.array([5e4, 1e5]), np.array([250.0, 250.0]))
     assert math.isclose(float(n[1] / n[0]), 2.0, rel_tol=1e-15)
     assert float(number_density(1.0, 1.0, constants=Constants(boltzmann=0.5))) == 2.0
-
-
-def test_numpy_and_jax_agree() -> None:
-    p = np.linspace(1e3, 1e5, 7)
-    t = np.linspace(200.0, 300.0, 7)
-    assert_numpy_jax_agree(number_density, p, t, rtol=1e-14)
 
 
 # --- dry-air thermodynamics ---
@@ -98,18 +91,6 @@ def test_hypsometric_thickness() -> None:
     )
 
 
-def test_thermo_numpy_and_jax_agree() -> None:
-    p = np.linspace(2e4, 1.05e5, 9)
-    t = np.linspace(220.0, 300.0, 9)
-    assert_numpy_jax_agree(dry_air_density, p, t, rtol=1e-14)
-    assert_numpy_jax_agree(
-        virtual_temperature, t, np.linspace(0.0, 0.02, 9), rtol=1e-14
-    )
-    assert_numpy_jax_agree(potential_temperature, t, p, rtol=1e-13)
-    assert_numpy_jax_agree(exner, p, rtol=1e-13)
-    assert_numpy_jax_agree(hypsometric_thickness, p[::-1], t[::-1], rtol=1e-13)
-
-
 # --- temperature from potential temperature ---
 
 RNG = np.random.default_rng(3)
@@ -165,18 +146,6 @@ def test_pressure_and_vertical_velocity_round_trip() -> None:
     np.testing.assert_allclose(
         vertical_velocity(2.0 * OMEGA, P, T), 2.0 * w, rtol=1e-15
     )
-
-
-@pytest.mark.parametrize(
-    ("fn", "args"),
-    [
-        (temperature_from_potential_temperature, (T[:8] + 30.0, P[:8])),
-        (vertical_velocity, (OMEGA[:8], P[:8], T[:8])),
-        (pressure_velocity, (OMEGA[:8], P[:8], T[:8])),
-    ],
-)
-def test_new_thermo_numpy_and_jax_agree(fn, args) -> None:
-    assert_numpy_jax_agree(fn, *args, rtol=1e-14)
 
 
 @needs_jax
