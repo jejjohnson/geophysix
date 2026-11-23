@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.6](https://github.com/jejjohnson/geophysix/compare/v0.0.5...v0.0.6) (2026-11-23)
+
+
+### Bug Fixes
+
+* **deps:** pipekit-array 0.1.3, one tag for the stack ([#69](https://github.com/jejjohnson/geophysix/issues/69)) ([3f9f670](https://github.com/jejjohnson/geophysix/commit/3f9f67082b409b43fbdec32d09f4e2eae5853245))
+* **xarray:** a DataArray's coordinates keep their attributes ([02e96b0](https://github.com/jejjohnson/geophysix/commit/02e96b0b55fb742bbd2adbadb643a10cc910c36c)), closes [#66](https://github.com/jejjohnson/geophysix/issues/66)
+
 ## [0.0.5](https://github.com/jejjohnson/geophysix/compare/v0.0.4...v0.0.5) (2026-11-23)
 
 
