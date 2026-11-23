@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any, Literal
 
-from geophysix._src._arrays import floating_inputs, like
-from geophysix._src.labelled import elementwise
+from pipekit_array.functions import elementwise, floating_inputs, like
+
 from geophysix.exceptions import GeophysixError
 
 

@@ -18,8 +18,8 @@ Private code goes in `src/geophysix/_src/<module>/<topic>.py`; the public module
 
 ## 3. Write it
 
-- Open with `xp, (x, y) = floating_inputs(x, y, params=(...))` from `geophysix._src._arrays`, and call only functions of the array API standard on `xp`. Never `import jax` at module level.
-- Decorate an elementwise function with `@elementwise()` from `geophysix._src.labelled`, so that a DataArray in gives a DataArray out.
+- Open with `xp, (x, y) = floating_inputs(x, y, params=(...))` from `pipekit_array.functions`, and call only functions of the array API standard on `xp`. Never `import jax` at module level.
+- Decorate an elementwise function with `@elementwise()` from `pipekit_array.functions`, so that a DataArray in gives a DataArray out.
 - Constants enter in the input's dtype: `c = xp.asarray(C, dtype=x.dtype)`; float32 in gives float32 out.
 - Parameters that belong together are a frozen dataclass record passed as a keyword argument with a default (`*, ellipsoid: Ellipsoid = WGS84`).
 - SI units. Degrees versus radians is an explicit argument (`degrees: bool = False`), never guessed.

@@ -5,10 +5,10 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
-from geophysix._src._arrays import floating_inputs, like
+from pipekit_array.functions import elementwise, floating_inputs, like
+
 from geophysix._src._records import is_concrete, register_record
 from geophysix._src.constants.records import STANDARD, Constants
-from geophysix._src.labelled import elementwise
 from geophysix.exceptions import GeophysixError
 
 
