@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.7](https://github.com/jejjohnson/geophysix/compare/v0.0.6...v0.0.7) (2026-11-24)
+
+
+### Bug Fixes
+
+* **deps:** pipekit-array 0.1.4, the tag that gridax and geotoolz pin ([#70](https://github.com/jejjohnson/geophysix/issues/70)) ([350b461](https://github.com/jejjohnson/geophysix/commit/350b46175169845c0e6bb4e2f4c510b06e7ed2b3))
+
 ## [0.0.6](https://github.com/jejjohnson/geophysix/compare/v0.0.5...v0.0.6) (2026-11-23)
 
 
