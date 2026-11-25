@@ -7,7 +7,8 @@ import inspect
 import numpy as np
 import pytest
 from _backends import needs_jax
-from pipekit_array.functions import elementwise, is_dataarray
+from pipekit_array.arrays import is_dataarray
+from pipekit_array.kernels import elementwise
 
 from geophysix import BackendError
 from geophysix.columns import convert

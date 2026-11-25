@@ -7,7 +7,7 @@ import math
 from collections.abc import Mapping
 from typing import Any
 
-from pipekit_array.functions import floating_inputs, is_dataarray, like
+from pipekit_array.arrays import floating_inputs, is_dataarray, like
 
 from geophysix._src.earth.records import WGS84, Ellipsoid
 from geophysix._src.labelled import apply_along

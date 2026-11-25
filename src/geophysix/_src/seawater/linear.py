@@ -5,8 +5,8 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
-from pipekit_array.functions import elementwise, floating_inputs, like
-from pipekit_array.records import register_record
+from pipekit_array.arrays import floating_inputs, like, register_record
+from pipekit_array.kernels import elementwise
 
 from geophysix._src._records import is_concrete
 from geophysix._src.constants.records import STANDARD, Constants
