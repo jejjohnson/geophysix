@@ -69,7 +69,7 @@ Before writing a helper, a constant, a conversion or a formula, find out whether
 | `xp = np if isinstance(x, np.ndarray) else jnp`, or `x.astype(float)` on an input | `namespace_of`, `floating_inputs` from `pipekit_array.functions` |
 | `isinstance(x, xr.DataArray)`, or a call to `xr.apply_ufunc` | `@elementwise` and `is_dataarray` from `pipekit_array.functions`; `geophysix._src.labelled.apply_along` for a function that changes the length of a named dimension |
 | A constant as an array of the input's dtype, on its device | `pipekit_array.functions.like` |
-| A frozen record that must cross `jit` | `geophysix._src._records.register_record` (and `is_concrete` for checks that skip tracers) |
+| A frozen record that must cross `jit` | `pipekit_array.records.register_record` (and `geophysix._src._records.is_concrete` for checks that skip tracers) |
 | A new exception for a bad body, unit or latitude | `EarthError`, `UnitError`, `RangeError` |
 
 ## The contracts

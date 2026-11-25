@@ -47,7 +47,7 @@ def test_the_kind_comes_back(call: Call, kind: ArrayKind) -> None:
         atol=call.atol,
         rtol32=call.rtol32,
         atol32=call.atol32,
-        kinds=[kind],
+        kinds=[kind.name],
     )
 
 
