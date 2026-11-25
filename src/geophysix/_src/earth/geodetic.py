@@ -5,7 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from pipekit_array.functions import elementwise, floating_inputs, like
+from pipekit_array.arrays import floating_inputs, like
+from pipekit_array.kernels import elementwise
 
 from geophysix._src.earth.records import WGS84, Ellipsoid
 

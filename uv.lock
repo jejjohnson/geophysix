@@ -599,7 +599,7 @@ typecheck = [
 requires-dist = [
     { name = "jax", marker = "extra == 'jax'", specifier = ">=0.4.30" },
     { name = "numpy", specifier = ">=2.0" },
-    { name = "pipekit-array", extras = ["numpy", "compat"], git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-array&tag=pipekit-array-v0.1.6" },
+    { name = "pipekit-array", extras = ["numpy", "compat"], git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-array&tag=pipekit-array-v0.2.0" },
     { name = "xarray", marker = "extra == 'xarray'", specifier = ">=2024.6" },
 ]
 provides-extras = ["jax", "xarray"]
@@ -1767,8 +1767,8 @@ wheels = [
 
 [[package]]
 name = "pipekit-array"
-version = "0.1.6"
-source = { git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-array&tag=pipekit-array-v0.1.6#41864be1079c44937d2eb56f58a1122895e1dc7d" }
+version = "0.2.0"
+source = { git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-array&tag=pipekit-array-v0.2.0#94c766d8b3cebbed07dafba43de32e0680d5d0f6" }
 dependencies = [
     { name = "pipekit-ops" },
 ]
@@ -1783,8 +1783,8 @@ numpy = [
 
 [[package]]
 name = "pipekit-ops"
-version = "0.2.4"
-source = { git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-ops&tag=pipekit-array-v0.1.6#41864be1079c44937d2eb56f58a1122895e1dc7d" }
+version = "0.3.0"
+source = { git = "https://github.com/jejjohnson/pipekit?subdirectory=packages%2Fpipekit-ops&tag=pipekit-array-v0.2.0#94c766d8b3cebbed07dafba43de32e0680d5d0f6" }
 
 [[package]]
 name = "platformdirs"

@@ -27,7 +27,7 @@ The public API is the set of public modules below; private code lives in `src/ge
 
 ### Boundaries
 
-- **Layer rule.** geophysix is GeoNumerics tier 0. Of the GeoStack it imports the array backend `pipekit_array.functions` and nothing else (pipekit is Core, below GeoNumerics; decided in jejjohnson/pipekit#244). It never imports the operators or carriers of pipekit, gridax, diagnostix, geotoolz or any GeoModels library; the last four import it.
+- **Layer rule.** geophysix is GeoNumerics tier 0. Of the GeoStack it imports the array backend of `pipekit_array` and nothing else (pipekit is Core, below GeoNumerics; decided in jejjohnson/pipekit#244). It never imports the operators or carriers of pipekit, gridax, diagnostix, geotoolz or any GeoModels library; the last four import it.
 - **Two runtime dependencies**: `numpy>=2.0` and `pipekit-array[numpy,compat]`, which brings pipekit-ops and `array-api-compat`. pipekit is pinned to one git tag until it is on PyPI (jejjohnson/pipekit#247). JAX and xarray are extras, and any other optional one goes behind an extra and an in-function import that names the extra when it is missing.
 - **Ownership test.** A closed-form fact about the Earth, its air or its sea water, evaluated at a point, belongs here. Anything on a grid or a field belongs above (gridax, diagnostix).
 
@@ -40,7 +40,7 @@ Each foundation brings a rule. Breaking one runs fine on your machine and fails 
 | Foundation | The package uses it for | The rule it brings |
 |---|---|---|
 | **NumPy ≥ 2.0** | The default namespace; every function runs on it | NumPy in gives NumPy out; no function needs JAX or xarray installed. |
-| **pipekit-array** (`pipekit_array.functions`) | The namespace, the dtype and the device of a call, and DataArrays | A change to them is made there, so that radiomax and gridax get it too. Only functions of the array API standard are called on the namespace; `array_api_strict` in the tests refuses the rest. |
+| **pipekit-array** (`pipekit_array.arrays`) | The namespace, the dtype and the device of a call, and DataArrays | A change to them is made there, so that radiomax and gridax get it too. Only functions of the array API standard are called on the namespace; `array_api_strict` in the tests refuses the rest. |
 | **JAX** (optional extra `jax`) | The same functions under `jit`, `vmap` and `grad` | Never imported at module level; used only when the caller passes JAX arrays, or a record that holds one. |
 | **xarray** (extra `xarray`) | A DataArray in, a DataArray out | Never imported; looked up in `sys.modules` once a DataArray can exist. |
 | **`dataclasses`** | Records such as an ellipsoid | `frozen=True`, `slots=True`, floats only, passed as keyword arguments with defaults. |
@@ -66,10 +66,10 @@ Before writing a helper, a constant, a conversion or a formula, find out whether
 | A wind speed, a meteorological wind direction, or u and v from them | `geophysix.wind` |
 | A linear sea-water density, buoyancy or reduced gravity | `geophysix.seawater` |
 | A column-unit conversion, `p / (k_B T)`, a dry-air column, a molecules-per-area to mixing-ratio conversion | `geophysix.columns.convert`, `geophysix.thermo.number_density`, `geophysix.columns.dry_air_column`, `mixing_ratio_from_column` |
-| `xp = np if isinstance(x, np.ndarray) else jnp`, or `x.astype(float)` on an input | `namespace_of`, `floating_inputs` from `pipekit_array.functions` |
-| `isinstance(x, xr.DataArray)`, or a call to `xr.apply_ufunc` | `@elementwise` and `is_dataarray` from `pipekit_array.functions`; `geophysix._src.labelled.apply_along` for a function that changes the length of a named dimension |
-| A constant as an array of the input's dtype, on its device | `pipekit_array.functions.like` |
-| A frozen record that must cross `jit` | `pipekit_array.records.register_record` (and `geophysix._src._records.is_concrete` for checks that skip tracers) |
+| `xp = np if isinstance(x, np.ndarray) else jnp`, or `x.astype(float)` on an input | `namespace_of`, `floating_inputs` from `pipekit_array.arrays` |
+| `isinstance(x, xr.DataArray)`, or a call to `xr.apply_ufunc` | `@elementwise` from `pipekit_array.kernels` and `is_dataarray` from `pipekit_array.arrays`; `geophysix._src.labelled.apply_along` for a function that changes the length of a named dimension |
+| A constant as an array of the input's dtype, on its device | `pipekit_array.arrays.like` |
+| A frozen record that must cross `jit` | `pipekit_array.arrays.register_record` (and `geophysix._src._records.is_concrete` for checks that skip tracers) |
 | A new exception for a bad body, unit or latitude | `EarthError`, `UnitError`, `RangeError` |
 
 ## The contracts

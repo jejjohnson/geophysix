@@ -1,7 +1,7 @@
 """Which fields of a record can be checked eagerly.
 
 A record is a frozen dataclass of floats, registered as a JAX pytree by
-`pipekit_array.records.register_record`. Under JAX a float field compiles in as
+`pipekit_array.arrays.register_record`. Under JAX a float field compiles in as
 a constant; a JAX scalar placed in a field is traced, which is how a radius or a
 molar mass is fitted.
 """

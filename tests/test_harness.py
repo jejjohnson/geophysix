@@ -13,7 +13,8 @@ import pytest
 from _backends import HAS_JAX, assert_backends_agree, needs_jax
 from _oracles import ecef_from_geodetic, geod_inverse, gsw_module
 from hypothesis import given, strategies as st
-from pipekit_array.functions import elementwise, floating_inputs, like
+from pipekit_array.arrays import floating_inputs, like
+from pipekit_array.kernels import elementwise
 
 
 @elementwise()

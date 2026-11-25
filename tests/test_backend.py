@@ -1,4 +1,4 @@
-"""geophysix on the array backend of `pipekit_array.functions`, which tests itself."""
+"""geophysix on the array backend of `pipekit_array.arrays`, which tests itself."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import array_api_strict as strict
 import numpy as np
 import pytest
 from _backends import needs_jax
-from pipekit_array.functions import floating_inputs, like
+from pipekit_array.arrays import floating_inputs, like
 
 from geophysix import BackendError
 from geophysix.earth import geodetic_to_ecef, sphere
