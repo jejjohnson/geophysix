@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/jejjohnson/geophysix/compare/v0.0.8...v0.0.9) (2026-11-25)
+
+
+### Bug Fixes
+
+* **deps:** pipekit-array 0.2.0 and its areas ([#78](https://github.com/jejjohnson/geophysix/issues/78)) ([c63e60d](https://github.com/jejjohnson/geophysix/commit/c63e60d53fe0e7b2420f7240d344d563124b7605))
+
 ## [0.0.8](https://github.com/jejjohnson/geophysix/compare/v0.0.7...v0.0.8) (2026-11-25)
 
 
