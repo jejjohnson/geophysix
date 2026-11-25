@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.8](https://github.com/jejjohnson/geophysix/compare/v0.0.7...v0.0.8) (2026-11-25)
+
+
+### Bug Fixes
+
+* **deps:** pipekit-array 0.1.5, the tag that diagnostix pins ([#73](https://github.com/jejjohnson/geophysix/issues/73)) ([44883ca](https://github.com/jejjohnson/geophysix/commit/44883cad5be33876d2e4f81c03c563a8156fabf5))
+* **deps:** pipekit-array 0.1.6, the newest tag of pipekit ([#76](https://github.com/jejjohnson/geophysix/issues/76)) ([5fcc282](https://github.com/jejjohnson/geophysix/commit/5fcc282ea18f70101b2cf7c6aaec2b17fb44981a))
+
 ## [0.0.7](https://github.com/jejjohnson/geophysix/compare/v0.0.6...v0.0.7) (2026-11-24)
 
 
