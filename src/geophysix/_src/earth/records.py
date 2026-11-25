@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import dataclasses
 
-from geophysix._src._records import is_concrete, register_record
+from pipekit_array.records import register_record
+
+from geophysix._src._records import is_concrete
 from geophysix.exceptions import EarthError
 
 
