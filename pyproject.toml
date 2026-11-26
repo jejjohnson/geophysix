@@ -81,7 +81,7 @@ docs = [
 [tool.uv.sources]
 # pipekit is not on PyPI (jejjohnson/pipekit#247). Every package of the stack pins
 # its packages to one tag: uv refuses two refs of one repository.
-pipekit-array = { git = "https://github.com/jejjohnson/pipekit", subdirectory = "packages/pipekit-array", tag = "pipekit-array-v0.2.0" }
+pipekit-array = { git = "https://github.com/jejjohnson/pipekit", subdirectory = "packages/pipekit-array", tag = "pipekit-array-v0.3.0" }
 
 [build-system]
 requires = ["hatchling"]
